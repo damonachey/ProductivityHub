@@ -32,3 +32,14 @@ export interface BookmarkItem {
 // Keyed by module instance id, so each Bookmarks module instance keeps its
 // own independent, ordered list.
 export type BookmarksState = Record<string, BookmarkItem[]>;
+
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+// Keyed by module instance id: the last-navigated URL, so a Web Page module
+// resumes where it left off across app restarts.
+export type WebPagesState = Record<string, string>;

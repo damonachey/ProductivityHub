@@ -3,7 +3,14 @@ import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
-import type { AppSettings, BookmarkItem, BookmarksState, NotesState, WorkspaceState } from "./types.js";
+import type {
+  AppSettings,
+  BookmarkItem,
+  BookmarksState,
+  NotesState,
+  Rect,
+  WorkspaceState,
+} from "./types.js";
 
 contextBridge.exposeInMainWorld("api", {
   listRepos: (): Promise<RepoSummary[]> => ipcRenderer.invoke("github:list-repos"),
@@ -27,4 +34,20 @@ contextBridge.exposeInMainWorld("api", {
   getBookmarks: (): Promise<BookmarksState> => ipcRenderer.invoke("bookmarks:get"),
   saveBookmarks: (moduleId: string, items: BookmarkItem[]): Promise<void> =>
     ipcRenderer.invoke("bookmarks:save", moduleId, items),
+  getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
+  syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
+    ipcRenderer.invoke("webpage:sync", moduleId, bounds),
+  hideWebPage: (moduleId: string): Promise<void> => ipcRenderer.invoke("webpage:hide", moduleId),
+  navigateWebPage: (moduleId: string, pageUrl: string): Promise<void> =>
+    ipcRenderer.invoke("webpage:navigate", moduleId, pageUrl),
+  webPageGoBack: (moduleId: string): Promise<void> => ipcRenderer.invoke("webpage:go-back", moduleId),
+  webPageGoForward: (moduleId: string): Promise<void> =>
+    ipcRenderer.invoke("webpage:go-forward", moduleId),
+  webPageReload: (moduleId: string): Promise<void> => ipcRenderer.invoke("webpage:reload", moduleId),
+  onWebPageNavigated: (callback: (moduleId: string, pageUrl: string) => void): (() => void) => {
+    const listener = (_event: unknown, moduleId: string, pageUrl: string) =>
+      callback(moduleId, pageUrl);
+    ipcRenderer.on("webpage:navigated", listener);
+    return () => ipcRenderer.removeListener("webpage:navigated", listener);
+  },
 });

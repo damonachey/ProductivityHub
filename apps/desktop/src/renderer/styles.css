@@ -500,3 +500,58 @@ body {
 .bookmark-add-button:hover {
   color: #fff;
 }
+
+.module-card:has(.webpage-module) {
+  max-width: 640px;
+  flex-basis: 480px;
+}
+
+.module-card:has(.webpage-module) .module-card-body {
+  padding: 0;
+  height: 480px;
+  max-height: none;
+  overflow: hidden;
+}
+
+.webpage-module {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.webpage-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #2a2b2e;
+}
+
+.webpage-toolbar button {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+}
+
+.webpage-toolbar button:hover {
+  color: #fff;
+}
+
+.webpage-address-input {
+  flex: 1;
+  background: #1e1f22;
+  border: 1px solid #3f3f46;
+  border-radius: 4px;
+  color: #e4e4e7;
+  padding: 4px 8px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.webpage-viewport {
+  flex: 1;
+  min-height: 0;
+}

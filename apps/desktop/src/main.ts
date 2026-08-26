@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from "electron";
+import { app, BrowserWindow, ipcMain, shell, WebContentsView } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
@@ -8,13 +8,31 @@ import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityh
 import { getHeadlines } from "@productivityhub/slashdot";
 import { getTopStories } from "@productivityhub/hackernews";
 import { getUnreadItems } from "@productivityhub/freshrss";
-import type { AppSettings, BookmarkItem, BookmarksState, NotesState, WorkspaceState } from "./types.js";
+import type {
+  AppSettings,
+  BookmarkItem,
+  BookmarksState,
+  NotesState,
+  Rect,
+  WebPagesState,
+  WorkspaceState,
+} from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const WORKSPACES_FILE = path.join(CONFIG_DIR, "workspaces.json");
 const SETTINGS_FILE = path.join(CONFIG_DIR, "settings.json");
 const NOTES_FILE = path.join(CONFIG_DIR, "notes.json");
 const BOOKMARKS_FILE = path.join(CONFIG_DIR, "bookmarks.json");
+const WEBPAGES_FILE = path.join(CONFIG_DIR, "webpages.json");
+
+let mainWindow: BrowserWindow | null = null;
+const webPageViews = new Map<string, WebContentsView>();
+
+function normalizeUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return trimmed;
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
 
 const DEFAULT_SETTINGS: AppSettings = { rememberActiveTab: true, lockLayout: false };
 
@@ -82,6 +100,102 @@ function saveBookmarks(moduleId: string, items: BookmarkItem[]): void {
   fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(bookmarks, null, 2));
 }
 
+function getWebPages(): WebPagesState {
+  try {
+    return JSON.parse(fs.readFileSync(WEBPAGES_FILE, "utf-8")) as WebPagesState;
+  } catch {
+    return {};
+  }
+}
+
+function saveWebPages(pages: WebPagesState): void {
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(WEBPAGES_FILE, JSON.stringify(pages, null, 2));
+}
+
+function saveWebPageUrl(moduleId: string, pageUrl: string): void {
+  const pages = getWebPages();
+  pages[moduleId] = pageUrl;
+  saveWebPages(pages);
+}
+
+// The view is created once per module instance and kept alive across
+// workspace-tab switches (which unmount/remount the React module) so the
+// page, its scroll position, and its login session don't reset every time
+// you switch tabs away and back. It starts hidden (zero-size); the renderer
+// grows it into place once it knows the placeholder <div>'s bounds.
+function ensureWebPageView(moduleId: string): WebContentsView {
+  let view = webPageViews.get(moduleId);
+  if (view) return view;
+
+  view = new WebContentsView({
+    webPreferences: {
+      partition: `persist:webpage-${moduleId}`,
+    },
+  });
+  webPageViews.set(moduleId, view);
+  mainWindow?.contentView.addChildView(view);
+  view.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+
+  view.webContents.setWindowOpenHandler(({ url: targetUrl }) => {
+    shell.openExternal(targetUrl);
+    return { action: "deny" };
+  });
+
+  view.webContents.on("did-navigate", (_event, pageUrl) => {
+    saveWebPageUrl(moduleId, pageUrl);
+    mainWindow?.webContents.send("webpage:navigated", moduleId, pageUrl);
+  });
+  view.webContents.on("did-navigate-in-page", (_event, pageUrl) => {
+    saveWebPageUrl(moduleId, pageUrl);
+    mainWindow?.webContents.send("webpage:navigated", moduleId, pageUrl);
+  });
+
+  const initialUrl = getWebPages()[moduleId];
+  if (initialUrl) {
+    view.webContents.loadURL(initialUrl);
+  }
+
+  return view;
+}
+
+function destroyWebPageView(moduleId: string): void {
+  const view = webPageViews.get(moduleId);
+  if (!view) return;
+  mainWindow?.contentView.removeChildView(view);
+  view.webContents.close();
+  webPageViews.delete(moduleId);
+}
+
+// Workspace/module removal doesn't get a dedicated "delete this webpage"
+// signal - it just stops appearing in the saved workspace state (whether
+// the module itself, or its whole workspace, was removed). So instead of
+// hooking module removal directly, every workspace save reconciles live
+// views against whatever webpage module ids still exist anywhere, and
+// tears down anything orphaned.
+function reconcileWebPageViews(state: WorkspaceState): void {
+  const liveIds = new Set<string>();
+  for (const workspace of state.workspaces) {
+    for (const moduleInstance of workspace.modules) {
+      if (moduleInstance.type === "webpage") liveIds.add(moduleInstance.id);
+    }
+  }
+
+  for (const moduleId of webPageViews.keys()) {
+    if (!liveIds.has(moduleId)) destroyWebPageView(moduleId);
+  }
+
+  const pages = getWebPages();
+  let changed = false;
+  for (const moduleId of Object.keys(pages)) {
+    if (!liveIds.has(moduleId)) {
+      delete pages[moduleId];
+      changed = true;
+    }
+  }
+  if (changed) saveWebPages(pages);
+}
+
 function createWindow(): void {
   const windowState = windowStateKeeper({
     defaultWidth: 1280,
@@ -99,6 +213,7 @@ function createWindow(): void {
   });
 
   windowState.manage(window);
+  mainWindow = window;
 
   // Any target="_blank" link (or window.open()) opens in the OS default
   // browser instead of a new Electron window.
@@ -117,9 +232,10 @@ ipcMain.handle("slashdot:get-headlines", () => getHeadlines());
 ipcMain.handle("hackernews:get-stories", () => getTopStories());
 ipcMain.handle("freshrss:get-unread", () => getUnreadItems());
 ipcMain.handle("config:get-workspaces", () => getWorkspaceState());
-ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) =>
-  saveWorkspaceState(state),
-);
+ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) => {
+  saveWorkspaceState(state);
+  reconcileWebPageViews(state);
+});
 ipcMain.handle("config:get-settings", () => getSettings());
 ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => saveSettings(settings));
 ipcMain.handle("notes:get", () => getNotes());
@@ -128,8 +244,37 @@ ipcMain.handle("bookmarks:get", () => getBookmarks());
 ipcMain.handle("bookmarks:save", (_event, moduleId: string, items: BookmarkItem[]) =>
   saveBookmarks(moduleId, items),
 );
+ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
+ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
+  const view = ensureWebPageView(moduleId);
+  view.setBounds(bounds);
+});
+ipcMain.handle("webpage:hide", (_event, moduleId: string) => {
+  webPageViews.get(moduleId)?.setBounds({ x: 0, y: 0, width: 0, height: 0 });
+});
+ipcMain.handle("webpage:navigate", (_event, moduleId: string, pageUrl: string) => {
+  const view = webPageViews.get(moduleId);
+  const normalized = normalizeUrl(pageUrl);
+  if (view && normalized) view.webContents.loadURL(normalized);
+});
+ipcMain.handle("webpage:go-back", (_event, moduleId: string) => {
+  const view = webPageViews.get(moduleId);
+  if (view?.webContents.navigationHistory.canGoBack()) view.webContents.navigationHistory.goBack();
+});
+ipcMain.handle("webpage:go-forward", (_event, moduleId: string) => {
+  const view = webPageViews.get(moduleId);
+  if (view?.webContents.navigationHistory.canGoForward()) {
+    view.webContents.navigationHistory.goForward();
+  }
+});
+ipcMain.handle("webpage:reload", (_event, moduleId: string) => {
+  webPageViews.get(moduleId)?.webContents.reload();
+});
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  reconcileWebPageViews(getWorkspaceState());
+});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
