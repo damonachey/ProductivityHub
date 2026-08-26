@@ -39,11 +39,16 @@ export function useWorkspaces() {
     }
   }, [workspaces, activeId]);
 
-  const addWorkspace = useCallback((name: string) => {
-    const workspace: Workspace = { id: crypto.randomUUID(), name, modules: [] };
+  const addWorkspace = useCallback((): Workspace => {
+    const workspace: Workspace = {
+      id: crypto.randomUUID(),
+      name: `Workspace ${workspaces.length + 1}`,
+      modules: [],
+    };
     setWorkspaces((prev) => [...prev, workspace]);
     setActiveId(workspace.id);
-  }, []);
+    return workspace;
+  }, [workspaces.length]);
 
   const removeWorkspace = useCallback((id: string) => {
     setWorkspaces((prev) => {

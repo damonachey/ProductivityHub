@@ -22,10 +22,7 @@ export function App() {
         workspaces={workspaces}
         activeId={activeWorkspace.id}
         onSelect={setActiveId}
-        onAdd={() => {
-          const name = window.prompt("Workspace name", `Workspace ${workspaces.length + 1}`);
-          if (name) addWorkspace(name);
-        }}
+        onAdd={addWorkspace}
         onRemove={removeWorkspace}
         onRename={renameWorkspace}
       />
