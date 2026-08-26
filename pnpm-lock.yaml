@@ -17,7 +17,25 @@ importers:
 
   packages/core: {}
 
+  packages/services/github:
+    dependencies:
+      '@productivityhub/core':
+        specifier: workspace:*
+        version: link:../../core
+
+  packages/services/google-calendar:
+    dependencies:
+      '@productivityhub/core':
+        specifier: workspace:*
+        version: link:../../core
+
   packages/services/google-mail:
+    dependencies:
+      '@productivityhub/core':
+        specifier: workspace:*
+        version: link:../../core
+
+  packages/services/google-tasks:
     dependencies:
       '@productivityhub/core':
         specifier: workspace:*
