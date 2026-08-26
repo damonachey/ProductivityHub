@@ -4,11 +4,19 @@ Electron desktop app and `ph` CLI for productivity tools, starting with Gmail, G
 
 ## Usage
 
+Copy `.env.example` to `.env` at the repo root and fill in real values (`.env` is gitignored):
+
 ```
-GITHUB_TOKEN=<a personal access token> ph gh repos
+cp .env.example .env
+```
+
+```
+ph gh repos
 ```
 
 Lists your GitHub repos, most recently updated first. This is the first working integration; the others are still scaffolding.
+
+`packages/core` loads `.env` automatically (resolved relative to the repo, not the current directory), so no manual `$env:` / `export` is needed once it's filled in.
 
 ## Layout
 
