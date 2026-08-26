@@ -8,11 +8,22 @@ interface Props {
   onAdd: () => Workspace;
   onRemove: (id: string) => void;
   onRename: (id: string, name: string) => void;
+  onReorder: (draggedId: string, targetId: string) => void;
 }
 
-export function TabBar({ workspaces, activeId, onSelect, onAdd, onRemove, onRename }: Props) {
+export function TabBar({
+  workspaces,
+  activeId,
+  onSelect,
+  onAdd,
+  onRemove,
+  onRename,
+  onReorder,
+}: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
 
   function startEditing(workspace: Workspace): void {
     setEditingId(workspace.id);
@@ -31,8 +42,35 @@ export function TabBar({ workspaces, activeId, onSelect, onAdd, onRemove, onRena
       {workspaces.map((workspace) => (
         <div
           key={workspace.id}
-          className={`tab${workspace.id === activeId ? " active" : ""}`}
+          className={[
+            "tab",
+            workspace.id === activeId && "active",
+            workspace.id === draggedId && "dragging",
+            workspace.id === dragOverId && "drag-over",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           onClick={() => onSelect(workspace.id)}
+          draggable={editingId !== workspace.id}
+          onDragStart={() => setDraggedId(workspace.id)}
+          onDragEnd={() => {
+            setDraggedId(null);
+            setDragOverId(null);
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            if (draggedId && draggedId !== workspace.id) {
+              setDragOverId(workspace.id);
+            }
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            if (draggedId && draggedId !== workspace.id) {
+              onReorder(draggedId, workspace.id);
+            }
+            setDraggedId(null);
+            setDragOverId(null);
+          }}
         >
           {editingId === workspace.id ? (
             <input

@@ -47,6 +47,14 @@ body {
   background: #1e1f22;
 }
 
+.tab.dragging {
+  opacity: 0.4;
+}
+
+.tab.drag-over {
+  box-shadow: inset 2px 0 0 #6366f1;
+}
+
 .tab-rename-input {
   background: #1e1f22;
   border: 1px solid #3f3f46;

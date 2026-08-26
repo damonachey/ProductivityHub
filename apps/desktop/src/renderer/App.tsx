@@ -12,6 +12,7 @@ export function App() {
     renameWorkspace,
     addModule,
     removeModule,
+    reorderWorkspaces,
   } = useWorkspaces();
 
   if (!workspaces) {
@@ -29,6 +30,7 @@ export function App() {
         onAdd={addWorkspace}
         onRemove={removeWorkspace}
         onRename={renameWorkspace}
+        onReorder={reorderWorkspaces}
       />
       <WorkspaceView
         workspace={activeWorkspace}

@@ -79,6 +79,21 @@ export function useWorkspaces() {
     );
   }, []);
 
+  const reorderWorkspaces = useCallback((draggedId: string, targetId: string) => {
+    setWorkspaces((prev) => {
+      const list = prev ?? [];
+      const draggedIndex = list.findIndex((workspace) => workspace.id === draggedId);
+      const targetIndex = list.findIndex((workspace) => workspace.id === targetId);
+      if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
+        return list;
+      }
+      const next = [...list];
+      const [dragged] = next.splice(draggedIndex, 1);
+      next.splice(targetIndex, 0, dragged);
+      return next;
+    });
+  }, []);
+
   return {
     workspaces,
     activeId,
@@ -88,5 +103,6 @@ export function useWorkspaces() {
     renameWorkspace,
     addModule,
     removeModule,
+    reorderWorkspaces,
   };
 }
