@@ -11,5 +11,8 @@
   },
   "dependencies": {
     "@productivityhub/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.3.0"
   }
 }

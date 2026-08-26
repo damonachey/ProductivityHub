@@ -1,13 +1,19 @@
 {
-  "name": "@productivityhub/core",
+  "name": "@productivityhub/cli",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "ph": "./dist/index.js"
+  },
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@productivityhub/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.3.0"

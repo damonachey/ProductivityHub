@@ -15,31 +15,61 @@ importers:
         specifier: ^7.0.2
         version: 7.0.2
 
-  packages/core: {}
+  apps/cli:
+    dependencies:
+      '@productivityhub/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
+
+  packages/core:
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
 
   packages/services/github:
     dependencies:
       '@productivityhub/core':
         specifier: workspace:*
         version: link:../../core
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
 
   packages/services/google-calendar:
     dependencies:
       '@productivityhub/core':
         specifier: workspace:*
         version: link:../../core
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
 
   packages/services/google-mail:
     dependencies:
       '@productivityhub/core':
         specifier: workspace:*
         version: link:../../core
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
 
   packages/services/google-tasks:
     dependencies:
       '@productivityhub/core':
         specifier: workspace:*
         version: link:../../core
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
 
 packages:
 
