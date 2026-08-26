@@ -17,7 +17,7 @@ function displayTitle(item: BookmarkItem): string {
   }
 }
 
-export function BookmarksModule({ moduleId }: ModuleProps) {
+export function BookmarksModule({ moduleId, lockLayout }: ModuleProps) {
   const [items, setItems] = useState<BookmarkItem[] | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editUrl, setEditUrl] = useState("");
@@ -34,12 +34,20 @@ export function BookmarksModule({ moduleId }: ModuleProps) {
     });
   }, [moduleId]);
 
+  useEffect(() => {
+    if (lockLayout) {
+      setEditingId(null);
+      setAddingOpen(false);
+    }
+  }, [lockLayout]);
+
   function persist(next: BookmarkItem[]): void {
     setItems(next);
     window.api.saveBookmarks(moduleId, next);
   }
 
   function startAdd(): void {
+    if (lockLayout) return;
     setNewUrl("");
     setNewTitle("");
     setAddingOpen(true);
@@ -57,6 +65,7 @@ export function BookmarksModule({ moduleId }: ModuleProps) {
   }
 
   function startEdit(item: BookmarkItem): void {
+    if (lockLayout) return;
     setEditingId(item.id);
     setEditUrl(item.url);
     setEditTitle(item.title ?? "");
@@ -79,12 +88,12 @@ export function BookmarksModule({ moduleId }: ModuleProps) {
   }
 
   function removeItem(id: string): void {
-    if (!items) return;
+    if (!items || lockLayout) return;
     persist(items.filter((item) => item.id !== id));
   }
 
   function reorder(draggedItemId: string, targetId: string): void {
-    if (!items) return;
+    if (!items || lockLayout) return;
     const fromIndex = items.findIndex((item) => item.id === draggedItemId);
     const toIndex = items.findIndex((item) => item.id === targetId);
     if (fromIndex === -1 || toIndex === -1) return;
@@ -115,7 +124,7 @@ export function BookmarksModule({ moduleId }: ModuleProps) {
             ]
               .filter(Boolean)
               .join(" ")}
-            draggable={editingId !== item.id}
+            draggable={!lockLayout && editingId !== item.id}
             onDragStart={() => setDraggedId(item.id)}
             onDragEnd={() => {
               setDraggedId(null);
@@ -166,9 +175,11 @@ export function BookmarksModule({ moduleId }: ModuleProps) {
               </div>
             ) : (
               <>
-                <span className="bookmark-drag-handle" aria-hidden="true">
-                  ⠿
-                </span>
+                {!lockLayout && (
+                  <span className="bookmark-drag-handle" aria-hidden="true">
+                    ⠿
+                  </span>
+                )}
                 <a
                   className="bookmark-link"
                   href={item.url}
@@ -178,56 +189,62 @@ export function BookmarksModule({ moduleId }: ModuleProps) {
                 >
                   {displayTitle(item)}
                 </a>
-                <div className="bookmark-actions">
-                  <button aria-label={`Edit ${displayTitle(item)}`} onClick={() => startEdit(item)}>
-                    ✎
-                  </button>
-                  <button
-                    aria-label={`Remove ${displayTitle(item)}`}
-                    onClick={() => removeItem(item.id)}
-                  >
-                    ×
-                  </button>
-                </div>
+                {!lockLayout && (
+                  <div className="bookmark-actions">
+                    <button
+                      aria-label={`Edit ${displayTitle(item)}`}
+                      onClick={() => startEdit(item)}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      aria-label={`Remove ${displayTitle(item)}`}
+                      onClick={() => removeItem(item.id)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </li>
         ))}
       </ul>
 
-      {addingOpen ? (
-        <div className="bookmark-add-form">
-          <input
-            className="bookmark-input"
-            autoFocus
-            placeholder="URL"
-            value={newUrl}
-            onChange={(event) => setNewUrl(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") commitAdd();
-              if (event.key === "Escape") setAddingOpen(false);
-            }}
-          />
-          <input
-            className="bookmark-input"
-            placeholder="Title (optional)"
-            value={newTitle}
-            onChange={(event) => setNewTitle(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") commitAdd();
-              if (event.key === "Escape") setAddingOpen(false);
-            }}
-          />
-          <div className="bookmark-edit-actions">
-            <button onClick={commitAdd}>Add</button>
-            <button onClick={() => setAddingOpen(false)}>Cancel</button>
+      {!lockLayout &&
+        (addingOpen ? (
+          <div className="bookmark-add-form">
+            <input
+              className="bookmark-input"
+              autoFocus
+              placeholder="URL"
+              value={newUrl}
+              onChange={(event) => setNewUrl(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") commitAdd();
+                if (event.key === "Escape") setAddingOpen(false);
+              }}
+            />
+            <input
+              className="bookmark-input"
+              placeholder="Title (optional)"
+              value={newTitle}
+              onChange={(event) => setNewTitle(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") commitAdd();
+                if (event.key === "Escape") setAddingOpen(false);
+              }}
+            />
+            <div className="bookmark-edit-actions">
+              <button onClick={commitAdd}>Add</button>
+              <button onClick={() => setAddingOpen(false)}>Cancel</button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <button className="bookmark-add-button" onClick={startAdd}>
-          + Add bookmark
-        </button>
-      )}
+        ) : (
+          <button className="bookmark-add-button" onClick={startAdd}>
+            + Add bookmark
+          </button>
+        ))}
     </div>
   );
 }

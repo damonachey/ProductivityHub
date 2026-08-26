@@ -74,7 +74,7 @@ export function WorkspaceView({ workspace, onAddModule, onRemoveModule, lockLayo
                 )}
               </div>
               <div className="module-card-body">
-                <Component moduleId={moduleInstance.id} />
+                <Component moduleId={moduleInstance.id} lockLayout={lockLayout} />
               </div>
             </div>
           );
