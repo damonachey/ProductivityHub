@@ -17,6 +17,12 @@ importers:
 
   packages/core: {}
 
+  packages/services/google-mail:
+    dependencies:
+      '@productivityhub/core':
+        specifier: workspace:*
+        version: link:../../core
+
 packages:
 
   '@types/node@26.3.0':
