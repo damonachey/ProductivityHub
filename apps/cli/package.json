@@ -14,7 +14,8 @@
     "package": "node scripts/build-portable.mjs"
   },
   "dependencies": {
-    "@productivityhub/core": "workspace:*"
+    "@productivityhub/core": "workspace:*",
+    "@productivityhub/github": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.3.0",

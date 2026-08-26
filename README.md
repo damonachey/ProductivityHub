@@ -2,6 +2,14 @@
 
 Electron desktop app and `ph` CLI for productivity tools, starting with Gmail, Google Tasks, Google Calendar, and GitHub — with more integrations planned.
 
+## Usage
+
+```
+GITHUB_TOKEN=<a personal access token> ph gh repos
+```
+
+Lists your GitHub repos, most recently updated first. This is the first working integration; the others are still scaffolding.
+
 ## Layout
 
 ```
