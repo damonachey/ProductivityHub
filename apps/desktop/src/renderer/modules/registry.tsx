@@ -1,12 +1,14 @@
 import type { ComponentType } from "react";
 import { GithubReposModule } from "./GithubReposModule";
 import { GithubNotificationsModule } from "./GithubNotificationsModule";
+import { NotesModule } from "./NotesModule";
 import { PlaceholderModule } from "./PlaceholderModule";
+import type { ModuleProps } from "./types";
 
 export interface ModuleDefinition {
   type: string;
   title: string;
-  Component: ComponentType;
+  Component: ComponentType<ModuleProps>;
 }
 
 const MODULE_DEFINITIONS: ModuleDefinition[] = [
@@ -16,6 +18,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
     title: "GitHub Notifications",
     Component: GithubNotificationsModule,
   },
+  { type: "notes", title: "Notes", Component: NotesModule },
   {
     type: "gmail-inbox",
     title: "Gmail Inbox",

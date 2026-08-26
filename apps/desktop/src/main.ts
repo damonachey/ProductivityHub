@@ -5,11 +5,12 @@ import url from "node:url";
 import windowStateKeeper from "electron-window-state";
 import { CONFIG_DIR } from "@productivityhub/core";
 import { listMyRepos, listMyNotifications } from "@productivityhub/github";
-import type { AppSettings, WorkspaceState } from "./types.js";
+import type { AppSettings, NotesState, WorkspaceState } from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const WORKSPACES_FILE = path.join(CONFIG_DIR, "workspaces.json");
 const SETTINGS_FILE = path.join(CONFIG_DIR, "settings.json");
+const NOTES_FILE = path.join(CONFIG_DIR, "notes.json");
 
 const DEFAULT_SETTINGS: AppSettings = { rememberActiveTab: true, lockLayout: false };
 
@@ -45,6 +46,21 @@ function getSettings(): AppSettings {
 function saveSettings(settings: AppSettings): void {
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+}
+
+function getNotes(): NotesState {
+  try {
+    return JSON.parse(fs.readFileSync(NOTES_FILE, "utf-8")) as NotesState;
+  } catch {
+    return {};
+  }
+}
+
+function saveNote(moduleId: string, text: string): void {
+  const notes = getNotes();
+  notes[moduleId] = text;
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(NOTES_FILE, JSON.stringify(notes, null, 2));
 }
 
 function createWindow(): void {
@@ -83,6 +99,8 @@ ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) =>
 );
 ipcMain.handle("config:get-settings", () => getSettings());
 ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => saveSettings(settings));
+ipcMain.handle("notes:get", () => getNotes());
+ipcMain.handle("notes:save", (_event, moduleId: string, text: string) => saveNote(moduleId, text));
 
 app.whenReady().then(createWindow);
 
