@@ -42,6 +42,9 @@ importers:
       '@productivityhub/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@productivityhub/freshrss':
+        specifier: workspace:*
+        version: link:../../packages/services/freshrss
       '@productivityhub/github':
         specifier: workspace:*
         version: link:../../packages/services/github
@@ -84,6 +87,16 @@ importers:
         version: 8.2.2(@types/node@26.3.0)(esbuild@0.28.2)(jiti@2.7.0)
 
   packages/core:
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
+
+  packages/services/freshrss:
+    dependencies:
+      '@productivityhub/core':
+        specifier: workspace:*
+        version: link:../../core
     devDependencies:
       '@types/node':
         specifier: ^26.3.0

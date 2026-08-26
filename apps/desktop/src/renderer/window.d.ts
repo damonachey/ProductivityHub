@@ -1,6 +1,7 @@
 import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
+import type { FreshRssItem } from "@productivityhub/freshrss";
 import type { AppSettings, NotesState, WorkspaceState } from "../types";
 
 declare global {
@@ -11,6 +12,7 @@ declare global {
       getGithubProfileUrl: () => Promise<string>;
       getSlashdotHeadlines: () => Promise<SlashdotHeadline[]>;
       getHackerNewsStories: () => Promise<HackerNewsStory[]>;
+      getFreshRssUnread: () => Promise<FreshRssItem[]>;
       getWorkspaces: () => Promise<WorkspaceState>;
       saveWorkspaces: (state: WorkspaceState) => Promise<void>;
       getSettings: () => Promise<AppSettings>;

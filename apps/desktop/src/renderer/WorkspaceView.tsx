@@ -19,6 +19,9 @@ function getTitleUrl(type: string, githubProfileUrl: string | null): string | un
   if (type === "hackernews") {
     return "https://news.ycombinator.com";
   }
+  if (type === "freshrss") {
+    return "http://192.168.0.9/FreshRSS/";
+  }
   return undefined;
 }
 

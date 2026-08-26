@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
+import type { FreshRssItem } from "@productivityhub/freshrss";
 import type { AppSettings, NotesState, WorkspaceState } from "./types.js";
 
 contextBridge.exposeInMainWorld("api", {
@@ -13,6 +14,7 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("slashdot:get-headlines"),
   getHackerNewsStories: (): Promise<HackerNewsStory[]> =>
     ipcRenderer.invoke("hackernews:get-stories"),
+  getFreshRssUnread: (): Promise<FreshRssItem[]> => ipcRenderer.invoke("freshrss:get-unread"),
   getWorkspaces: (): Promise<WorkspaceState> => ipcRenderer.invoke("config:get-workspaces"),
   saveWorkspaces: (state: WorkspaceState): Promise<void> =>
     ipcRenderer.invoke("config:save-workspaces", state),

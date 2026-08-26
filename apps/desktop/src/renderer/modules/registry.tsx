@@ -4,6 +4,7 @@ import { GithubNotificationsModule } from "./GithubNotificationsModule";
 import { NotesModule } from "./NotesModule";
 import { SlashdotModule } from "./SlashdotModule";
 import { HackerNewsModule } from "./HackerNewsModule";
+import { FreshRssModule } from "./FreshRssModule";
 import { PlaceholderModule } from "./PlaceholderModule";
 import type { ModuleProps } from "./types";
 
@@ -23,6 +24,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
   { type: "notes", title: "Notes", Component: NotesModule },
   { type: "slashdot", title: "Slashdot", Component: SlashdotModule },
   { type: "hackernews", title: "Hacker News", Component: HackerNewsModule },
+  { type: "freshrss", title: "FreshRSS", Component: FreshRssModule },
   {
     type: "gmail-inbox",
     title: "Gmail Inbox",

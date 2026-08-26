@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@productivityhub/core": "workspace:*",
+    "@productivityhub/freshrss": "workspace:*",
     "@productivityhub/github": "workspace:*",
     "@productivityhub/hackernews": "workspace:*",
     "@productivityhub/slashdot": "workspace:*",
