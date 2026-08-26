@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react";
 import type { RepoSummary } from "@productivityhub/github";
+import { useCachedData } from "../useCachedData";
+
+const CACHE_KEY = "github-repos";
+const CACHE_TTL_MS = 5 * 60 * 1000; // repos change infrequently
 
 function formatDate(iso: string | null): string {
   if (!iso) return "unknown";
@@ -11,15 +14,9 @@ function formatDate(iso: string | null): string {
 }
 
 export function GithubReposModule() {
-  const [repos, setRepos] = useState<RepoSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    window.api
-      .listRepos()
-      .then(setRepos)
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)));
-  }, []);
+  const { data: repos, error } = useCachedData<RepoSummary[]>(CACHE_KEY, CACHE_TTL_MS, () =>
+    window.api.listRepos(),
+  );
 
   if (error) {
     return <p className="module-error">Error: {error}</p>;

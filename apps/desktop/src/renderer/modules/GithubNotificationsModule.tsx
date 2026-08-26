@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react";
 import type { NotificationSummary } from "@productivityhub/github";
+import { useCachedData } from "../useCachedData";
+
+const CACHE_KEY = "github-notifications";
+const CACHE_TTL_MS = 60 * 1000; // notifications should stay fresher than repos
 
 function formatDate(iso: string | null): string {
   if (!iso) return "unknown";
@@ -15,15 +18,11 @@ function formatReason(reason: string): string {
 }
 
 export function GithubNotificationsModule() {
-  const [notifications, setNotifications] = useState<NotificationSummary[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    window.api
-      .listNotifications()
-      .then(setNotifications)
-      .catch((err: unknown) => setError(err instanceof Error ? err.message : String(err)));
-  }, []);
+  const { data: notifications, error } = useCachedData<NotificationSummary[]>(
+    CACHE_KEY,
+    CACHE_TTL_MS,
+    () => window.api.listNotifications(),
+  );
 
   if (error) {
     return <p className="module-error">Error: {error}</p>;
