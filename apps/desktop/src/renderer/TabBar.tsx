@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Workspace } from "../types";
 
 interface Props {
@@ -34,7 +34,20 @@ export function TabBar({
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.ctrlKey && event.key === ",") {
+        event.preventDefault();
+        setSettingsOpen((open) => !open);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   function startEditing(workspace: Workspace): void {
+    if (lockLayout) return;
     setEditingId(workspace.id);
     setDraftName(workspace.name);
   }
@@ -104,7 +117,7 @@ export function TabBar({
               {workspace.name}
             </span>
           )}
-          {workspaces.length > 1 && (
+          {!lockLayout && workspaces.length > 1 && (
             <button
               className="tab-close"
               aria-label={`Close ${workspace.name}`}
@@ -144,18 +157,18 @@ export function TabBar({
               <label className="settings-checkbox">
                 <input
                   type="checkbox"
-                  checked={rememberActiveTab}
-                  onChange={(event) => onSetRememberActiveTab(event.target.checked)}
-                />
-                Remember active tab
-              </label>
-              <label className="settings-checkbox">
-                <input
-                  type="checkbox"
                   checked={lockLayout}
                   onChange={(event) => onSetLockLayout(event.target.checked)}
                 />
                 Lock layout
+              </label>
+              <label className="settings-checkbox">
+                <input
+                  type="checkbox"
+                  checked={rememberActiveTab}
+                  onChange={(event) => onSetRememberActiveTab(event.target.checked)}
+                />
+                Remember active tab
               </label>
             </div>
           </>
