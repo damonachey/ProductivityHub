@@ -3,7 +3,7 @@ import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
-import type { AppSettings, NotesState, WorkspaceState } from "./types.js";
+import type { AppSettings, BookmarkItem, BookmarksState, NotesState, WorkspaceState } from "./types.js";
 
 contextBridge.exposeInMainWorld("api", {
   listRepos: (): Promise<RepoSummary[]> => ipcRenderer.invoke("github:list-repos"),
@@ -24,4 +24,7 @@ contextBridge.exposeInMainWorld("api", {
   getNotes: (): Promise<NotesState> => ipcRenderer.invoke("notes:get"),
   saveNote: (moduleId: string, text: string): Promise<void> =>
     ipcRenderer.invoke("notes:save", moduleId, text),
+  getBookmarks: (): Promise<BookmarksState> => ipcRenderer.invoke("bookmarks:get"),
+  saveBookmarks: (moduleId: string, items: BookmarkItem[]): Promise<void> =>
+    ipcRenderer.invoke("bookmarks:save", moduleId, items),
 });

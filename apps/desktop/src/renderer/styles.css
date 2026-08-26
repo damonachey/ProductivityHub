@@ -370,3 +370,133 @@ body {
   font-style: italic;
   margin: 4px 2px;
 }
+
+.bookmarks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bookmark-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bookmark-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  border-radius: 4px;
+}
+
+.bookmark-item.dragging {
+  opacity: 0.4;
+}
+
+.bookmark-item.drag-over {
+  box-shadow: inset 0 2px 0 #6366f1;
+}
+
+.bookmark-drag-handle {
+  color: #52525b;
+  cursor: grab;
+  font-size: 12px;
+}
+
+.bookmark-link {
+  flex: 1;
+  color: #e4e4e7;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookmark-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.bookmark-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+}
+
+.bookmark-item:hover .bookmark-actions,
+.bookmark-item:focus-within .bookmark-actions {
+  opacity: 1;
+}
+
+.bookmark-actions button {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+
+.bookmark-actions button:hover {
+  color: #fff;
+}
+
+.bookmark-edit-form,
+.bookmark-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 0;
+}
+
+.bookmark-input {
+  background: #1e1f22;
+  border: 1px solid #3f3f46;
+  border-radius: 4px;
+  color: #e4e4e7;
+  padding: 5px 8px;
+  font: inherit;
+}
+
+.bookmark-input::placeholder {
+  color: #71717a;
+}
+
+.bookmark-edit-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.bookmark-edit-actions button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.bookmark-edit-actions button:hover {
+  background: #2a2b2e;
+}
+
+.bookmark-add-button {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 2px;
+}
+
+.bookmark-add-button:hover {
+  color: #fff;
+}

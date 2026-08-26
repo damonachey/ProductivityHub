@@ -8,12 +8,13 @@ import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityh
 import { getHeadlines } from "@productivityhub/slashdot";
 import { getTopStories } from "@productivityhub/hackernews";
 import { getUnreadItems } from "@productivityhub/freshrss";
-import type { AppSettings, NotesState, WorkspaceState } from "./types.js";
+import type { AppSettings, BookmarkItem, BookmarksState, NotesState, WorkspaceState } from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const WORKSPACES_FILE = path.join(CONFIG_DIR, "workspaces.json");
 const SETTINGS_FILE = path.join(CONFIG_DIR, "settings.json");
 const NOTES_FILE = path.join(CONFIG_DIR, "notes.json");
+const BOOKMARKS_FILE = path.join(CONFIG_DIR, "bookmarks.json");
 
 const DEFAULT_SETTINGS: AppSettings = { rememberActiveTab: true, lockLayout: false };
 
@@ -66,6 +67,21 @@ function saveNote(moduleId: string, text: string): void {
   fs.writeFileSync(NOTES_FILE, JSON.stringify(notes, null, 2));
 }
 
+function getBookmarks(): BookmarksState {
+  try {
+    return JSON.parse(fs.readFileSync(BOOKMARKS_FILE, "utf-8")) as BookmarksState;
+  } catch {
+    return {};
+  }
+}
+
+function saveBookmarks(moduleId: string, items: BookmarkItem[]): void {
+  const bookmarks = getBookmarks();
+  bookmarks[moduleId] = items;
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(bookmarks, null, 2));
+}
+
 function createWindow(): void {
   const windowState = windowStateKeeper({
     defaultWidth: 1280,
@@ -108,6 +124,10 @@ ipcMain.handle("config:get-settings", () => getSettings());
 ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => saveSettings(settings));
 ipcMain.handle("notes:get", () => getNotes());
 ipcMain.handle("notes:save", (_event, moduleId: string, text: string) => saveNote(moduleId, text));
+ipcMain.handle("bookmarks:get", () => getBookmarks());
+ipcMain.handle("bookmarks:save", (_event, moduleId: string, items: BookmarkItem[]) =>
+  saveBookmarks(moduleId, items),
+);
 
 app.whenReady().then(createWindow);
 

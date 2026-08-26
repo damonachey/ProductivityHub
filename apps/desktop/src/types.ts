@@ -22,3 +22,13 @@ export interface AppSettings {
 // Keyed by module instance id, so each Notes module instance keeps its own
 // independent text.
 export type NotesState = Record<string, string>;
+
+export interface BookmarkItem {
+  id: string;
+  url: string;
+  title?: string;
+}
+
+// Keyed by module instance id, so each Bookmarks module instance keeps its
+// own independent, ordered list.
+export type BookmarksState = Record<string, BookmarkItem[]>;

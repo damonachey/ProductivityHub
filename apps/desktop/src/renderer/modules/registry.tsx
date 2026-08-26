@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { GithubReposModule } from "./GithubReposModule";
 import { GithubNotificationsModule } from "./GithubNotificationsModule";
 import { NotesModule } from "./NotesModule";
+import { BookmarksModule } from "./BookmarksModule";
 import { SlashdotModule } from "./SlashdotModule";
 import { HackerNewsModule } from "./HackerNewsModule";
 import { FreshRssModule } from "./FreshRssModule";
@@ -22,6 +23,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
     Component: GithubNotificationsModule,
   },
   { type: "notes", title: "Notes", Component: NotesModule },
+  { type: "bookmarks", title: "Bookmarks", Component: BookmarksModule },
   { type: "slashdot", title: "Slashdot", Component: SlashdotModule },
   { type: "hackernews", title: "Hacker News", Component: HackerNewsModule },
   { type: "freshrss", title: "FreshRSS", Component: FreshRssModule },
