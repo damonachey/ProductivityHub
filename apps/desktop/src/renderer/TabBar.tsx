@@ -39,6 +39,11 @@ export function TabBar({
       if (event.ctrlKey && event.key === ",") {
         event.preventDefault();
         setSettingsOpen((open) => !open);
+        return;
+      }
+
+      if (event.key === "Escape") {
+        setSettingsOpen(false);
       }
     }
 
