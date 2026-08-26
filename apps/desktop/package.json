@@ -7,13 +7,14 @@
   "author": "Damon Achey",
   "main": "./dist/main.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/copy-assets.mjs",
     "start": "electron .",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "package": "electron-builder"
   },
   "dependencies": {
-    "@productivityhub/core": "workspace:*"
+    "@productivityhub/core": "workspace:*",
+    "@productivityhub/github": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.3.0",
@@ -26,16 +27,25 @@
     "directories": {
       "output": "release"
     },
-    "files": ["dist/**/*", "package.json"],
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
-      "target": ["portable"]
+      "target": [
+        "portable"
+      ]
     },
     "mac": {
-      "target": ["zip"]
+      "target": [
+        "zip"
+      ]
     },
     "linux": {
-      "target": ["AppImage"]
+      "target": [
+        "AppImage"
+      ]
     }
   }
 }
