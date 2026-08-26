@@ -90,6 +90,60 @@ body {
   color: #fff;
 }
 
+.tab-settings-wrapper {
+  margin-left: auto;
+  position: relative;
+  -webkit-app-region: no-drag;
+}
+
+.tab-settings-button {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 16px;
+}
+
+.tab-settings-button:hover {
+  color: #fff;
+}
+
+.popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+}
+
+.settings-popup {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 11;
+  background: #26272b;
+  border: 1px solid #2a2b2e;
+  border-radius: 6px;
+  padding: 10px 12px;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.settings-popup-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.settings-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #e4e4e7;
+  cursor: pointer;
+}
+
 .workspace-view {
   flex: 1;
   overflow: auto;

@@ -13,3 +13,7 @@ export interface WorkspaceState {
   activeId: string;
   workspaces: Workspace[];
 }
+
+export interface AppSettings {
+  rememberActiveTab: boolean;
+}

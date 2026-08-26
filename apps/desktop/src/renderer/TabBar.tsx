@@ -9,6 +9,8 @@ interface Props {
   onRemove: (id: string) => void;
   onRename: (id: string, name: string) => void;
   onReorder: (draggedId: string, targetId: string) => void;
+  rememberActiveTab: boolean;
+  onSetRememberActiveTab: (value: boolean) => void;
 }
 
 export function TabBar({
@@ -19,11 +21,14 @@ export function TabBar({
   onRemove,
   onRename,
   onReorder,
+  rememberActiveTab,
+  onSetRememberActiveTab,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   function startEditing(workspace: Workspace): void {
     setEditingId(workspace.id);
@@ -116,6 +121,32 @@ export function TabBar({
       >
         +
       </button>
+
+      <div className="tab-settings-wrapper">
+        <button
+          className="tab-settings-button"
+          aria-label="Quick Settings"
+          onClick={() => setSettingsOpen((open) => !open)}
+        >
+          ⚙
+        </button>
+        {settingsOpen && (
+          <>
+            <div className="popup-backdrop" onClick={() => setSettingsOpen(false)} />
+            <div className="settings-popup">
+              <div className="settings-popup-title">Quick Settings</div>
+              <label className="settings-checkbox">
+                <input
+                  type="checkbox"
+                  checked={rememberActiveTab}
+                  onChange={(event) => onSetRememberActiveTab(event.target.checked)}
+                />
+                Remember active tab
+              </label>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

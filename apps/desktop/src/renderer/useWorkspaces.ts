@@ -14,14 +14,23 @@ function defaultWorkspaces(): Workspace[] {
 export function useWorkspaces() {
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [activeId, setActiveId] = useState<string>("");
+  const [rememberActiveTab, setRememberActiveTabState] = useState(true);
 
   useEffect(() => {
-    window.api.getWorkspaces().then((state) => {
-      const initial = state.workspaces.length > 0 ? state.workspaces : defaultWorkspaces();
-      setWorkspaces(initial);
-      const restored = initial.some((workspace) => workspace.id === state.activeId);
-      setActiveId(restored ? state.activeId : initial[0].id);
-    });
+    Promise.all([window.api.getWorkspaces(), window.api.getSettings()]).then(
+      ([state, settings]) => {
+        const initial = state.workspaces.length > 0 ? state.workspaces : defaultWorkspaces();
+        setWorkspaces(initial);
+        setRememberActiveTabState(settings.rememberActiveTab);
+
+        if (settings.rememberActiveTab) {
+          const restored = initial.some((workspace) => workspace.id === state.activeId);
+          setActiveId(restored ? state.activeId : initial[0].id);
+        } else {
+          setActiveId(initial[0].id);
+        }
+      },
+    );
   }, []);
 
   useEffect(() => {
@@ -29,6 +38,11 @@ export function useWorkspaces() {
       window.api.saveWorkspaces({ activeId, workspaces });
     }
   }, [workspaces, activeId]);
+
+  const setRememberActiveTab = useCallback((value: boolean) => {
+    setRememberActiveTabState(value);
+    window.api.saveSettings({ rememberActiveTab: value });
+  }, []);
 
   useEffect(() => {
     if (workspaces && !workspaces.some((workspace) => workspace.id === activeId)) {
@@ -105,5 +119,7 @@ export function useWorkspaces() {
     addModule,
     removeModule,
     reorderWorkspaces,
+    rememberActiveTab,
+    setRememberActiveTab,
   };
 }

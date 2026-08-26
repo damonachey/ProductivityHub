@@ -5,10 +5,13 @@ import url from "node:url";
 import windowStateKeeper from "electron-window-state";
 import { CONFIG_DIR } from "@productivityhub/core";
 import { listMyRepos } from "@productivityhub/github";
-import type { WorkspaceState } from "./types.js";
+import type { AppSettings, WorkspaceState } from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const WORKSPACES_FILE = path.join(CONFIG_DIR, "workspaces.json");
+const SETTINGS_FILE = path.join(CONFIG_DIR, "settings.json");
+
+const DEFAULT_SETTINGS: AppSettings = { rememberActiveTab: true };
 
 function getWorkspaceState(): WorkspaceState {
   try {
@@ -26,6 +29,22 @@ function getWorkspaceState(): WorkspaceState {
 function saveWorkspaceState(state: WorkspaceState): void {
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
   fs.writeFileSync(WORKSPACES_FILE, JSON.stringify(state, null, 2));
+}
+
+function getSettings(): AppSettings {
+  try {
+    return {
+      ...DEFAULT_SETTINGS,
+      ...(JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8")) as Partial<AppSettings>),
+    };
+  } catch {
+    return DEFAULT_SETTINGS;
+  }
+}
+
+function saveSettings(settings: AppSettings): void {
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
 }
 
 function createWindow(): void {
@@ -61,6 +80,8 @@ ipcMain.handle("config:get-workspaces", () => getWorkspaceState());
 ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) =>
   saveWorkspaceState(state),
 );
+ipcMain.handle("config:get-settings", () => getSettings());
+ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => saveSettings(settings));
 
 app.whenReady().then(createWindow);
 

@@ -13,6 +13,8 @@ export function App() {
     addModule,
     removeModule,
     reorderWorkspaces,
+    rememberActiveTab,
+    setRememberActiveTab,
   } = useWorkspaces();
 
   if (!workspaces) {
@@ -31,6 +33,8 @@ export function App() {
         onRemove={removeWorkspace}
         onRename={renameWorkspace}
         onReorder={reorderWorkspaces}
+        rememberActiveTab={rememberActiveTab}
+        onSetRememberActiveTab={setRememberActiveTab}
       />
       <WorkspaceView
         workspace={activeWorkspace}
