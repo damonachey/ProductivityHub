@@ -156,17 +156,41 @@ body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 10px;
 }
 
-.repo-list a {
-  color: inherit;
+.repo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.repo-name {
+  color: #e4e4e7;
   text-decoration: none;
+  font-weight: 600;
 }
 
-.repo-list a:hover {
+.repo-name:hover {
   color: #fff;
   text-decoration: underline;
+}
+
+.repo-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #71717a;
+  font-size: 12px;
+}
+
+.repo-badge {
+  color: #a1a1aa;
+  border: 1px solid #3f3f46;
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .module-card-add {

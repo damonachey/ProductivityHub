@@ -6,6 +6,8 @@ export interface RepoSummary {
   private: boolean;
   updatedAt: string | null;
   htmlUrl: string;
+  language: string | null;
+  stars: number;
 }
 
 function createClient(): Octokit {
@@ -24,5 +26,7 @@ export async function listMyRepos(): Promise<RepoSummary[]> {
     private: repo.private,
     updatedAt: repo.updated_at ?? null,
     htmlUrl: repo.html_url,
+    language: repo.language ?? null,
+    stars: repo.stargazers_count ?? 0,
   }));
 }

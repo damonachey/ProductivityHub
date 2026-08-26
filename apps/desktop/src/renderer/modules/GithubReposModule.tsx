@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import type { RepoSummary } from "@productivityhub/github";
 
+function formatDate(iso: string | null): string {
+  if (!iso) return "unknown";
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function GithubReposModule() {
   const [repos, setRepos] = useState<RepoSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,10 +32,16 @@ export function GithubReposModule() {
   return (
     <ul className="repo-list">
       {repos.map((repo) => (
-        <li key={repo.name}>
-          <a href={repo.htmlUrl} target="_blank" rel="noreferrer">
-            {repo.name} ({repo.private ? "private" : "public"}) — updated {repo.updatedAt}
+        <li key={repo.name} className="repo-item">
+          <a className="repo-name" href={repo.htmlUrl} target="_blank" rel="noreferrer">
+            {repo.name}
           </a>
+          <div className="repo-meta">
+            {repo.private && <span className="repo-badge">Private</span>}
+            {repo.language && <span>{repo.language}</span>}
+            <span>★ {repo.stars}</span>
+            <span>Updated {formatDate(repo.updatedAt)}</span>
+          </div>
         </li>
       ))}
     </ul>
