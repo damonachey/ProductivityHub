@@ -27,6 +27,7 @@
       "output": "release"
     },
     "files": ["dist/**/*", "package.json"],
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
       "target": ["portable"]
     },
