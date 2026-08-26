@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
+import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { AppSettings, NotesState, WorkspaceState } from "./types.js";
 
 contextBridge.exposeInMainWorld("api", {
@@ -10,6 +11,8 @@ contextBridge.exposeInMainWorld("api", {
   getGithubProfileUrl: (): Promise<string> => ipcRenderer.invoke("github:get-profile-url"),
   getSlashdotHeadlines: (): Promise<SlashdotHeadline[]> =>
     ipcRenderer.invoke("slashdot:get-headlines"),
+  getHackerNewsStories: (): Promise<HackerNewsStory[]> =>
+    ipcRenderer.invoke("hackernews:get-stories"),
   getWorkspaces: (): Promise<WorkspaceState> => ipcRenderer.invoke("config:get-workspaces"),
   saveWorkspaces: (state: WorkspaceState): Promise<void> =>
     ipcRenderer.invoke("config:save-workspaces", state),

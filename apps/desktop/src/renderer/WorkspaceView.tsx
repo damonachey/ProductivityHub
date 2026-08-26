@@ -16,6 +16,9 @@ function getTitleUrl(type: string, githubProfileUrl: string | null): string | un
   if (type === "slashdot") {
     return "https://slashdot.org";
   }
+  if (type === "hackernews") {
+    return "https://news.ycombinator.com";
+  }
   return undefined;
 }
 

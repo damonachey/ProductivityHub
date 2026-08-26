@@ -6,6 +6,7 @@ import windowStateKeeper from "electron-window-state";
 import { CONFIG_DIR } from "@productivityhub/core";
 import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityhub/github";
 import { getHeadlines } from "@productivityhub/slashdot";
+import { getTopStories } from "@productivityhub/hackernews";
 import type { AppSettings, NotesState, WorkspaceState } from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -96,6 +97,7 @@ ipcMain.handle("github:list-repos", () => listMyRepos());
 ipcMain.handle("github:list-notifications", () => listMyNotifications());
 ipcMain.handle("github:get-profile-url", () => getMyGithubUrl());
 ipcMain.handle("slashdot:get-headlines", () => getHeadlines());
+ipcMain.handle("hackernews:get-stories", () => getTopStories());
 ipcMain.handle("config:get-workspaces", () => getWorkspaceState());
 ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) =>
   saveWorkspaceState(state),

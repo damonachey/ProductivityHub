@@ -45,6 +45,9 @@ importers:
       '@productivityhub/github':
         specifier: workspace:*
         version: link:../../packages/services/github
+      '@productivityhub/hackernews':
+        specifier: workspace:*
+        version: link:../../packages/services/hackernews
       '@productivityhub/slashdot':
         specifier: workspace:*
         version: link:../../packages/services/slashdot
@@ -124,6 +127,12 @@ importers:
       '@productivityhub/core':
         specifier: workspace:*
         version: link:../../core
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
+
+  packages/services/hackernews:
     devDependencies:
       '@types/node':
         specifier: ^26.3.0
