@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld("api", {
   listRepos: (): Promise<RepoSummary[]> => ipcRenderer.invoke("github:list-repos"),
   listNotifications: (): Promise<NotificationSummary[]> =>
     ipcRenderer.invoke("github:list-notifications"),
+  getGithubProfileUrl: (): Promise<string> => ipcRenderer.invoke("github:get-profile-url"),
   getWorkspaces: (): Promise<WorkspaceState> => ipcRenderer.invoke("config:get-workspaces"),
   saveWorkspaces: (state: WorkspaceState): Promise<void> =>
     ipcRenderer.invoke("config:save-workspaces", state),

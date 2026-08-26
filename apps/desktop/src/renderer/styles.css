@@ -180,6 +180,15 @@ body {
   font-size: 14px;
 }
 
+.module-card-header a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.module-card-header a:hover {
+  text-decoration: underline;
+}
+
 .module-card-header button {
   background: none;
   border: none;

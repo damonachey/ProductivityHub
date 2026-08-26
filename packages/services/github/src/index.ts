@@ -14,6 +14,12 @@ function createClient(): Octokit {
   return new Octokit({ auth: requireEnv("GITHUB_TOKEN") });
 }
 
+export async function getMyGithubUrl(): Promise<string> {
+  const octokit = createClient();
+  const { data } = await octokit.rest.users.getAuthenticated();
+  return data.html_url;
+}
+
 export async function listMyRepos(): Promise<RepoSummary[]> {
   const octokit = createClient();
   const { data } = await octokit.rest.repos.listForAuthenticatedUser({

@@ -6,6 +6,7 @@ declare global {
     api: {
       listRepos: () => Promise<RepoSummary[]>;
       listNotifications: () => Promise<NotificationSummary[]>;
+      getGithubProfileUrl: () => Promise<string>;
       getWorkspaces: () => Promise<WorkspaceState>;
       saveWorkspaces: (state: WorkspaceState) => Promise<void>;
       getSettings: () => Promise<AppSettings>;

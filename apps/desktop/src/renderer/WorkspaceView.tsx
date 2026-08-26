@@ -1,6 +1,20 @@
 import { useState } from "react";
 import type { Workspace } from "../types";
 import { MODULE_REGISTRY, getModuleDefinition } from "./modules/registry";
+import { useCachedData } from "./useCachedData";
+
+const GITHUB_PROFILE_CACHE_KEY = "github-profile-url";
+const GITHUB_PROFILE_CACHE_TTL_MS = 60 * 60 * 1000; // rarely changes
+
+function getTitleUrl(type: string, githubProfileUrl: string | null): string | undefined {
+  if (type === "github-repos") {
+    return githubProfileUrl ? `${githubProfileUrl}?tab=repositories` : undefined;
+  }
+  if (type === "github-notifications") {
+    return "https://github.com/notifications";
+  }
+  return undefined;
+}
 
 interface Props {
   workspace: Workspace;
@@ -12,6 +26,11 @@ interface Props {
 export function WorkspaceView({ workspace, onAddModule, onRemoveModule, lockLayout }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: githubProfileUrl } = useCachedData<string>(
+    GITHUB_PROFILE_CACHE_KEY,
+    GITHUB_PROFILE_CACHE_TTL_MS,
+    () => window.api.getGithubProfileUrl(),
+  );
 
   const filteredModules = MODULE_REGISTRY.filter((definition) =>
     definition.title.toLowerCase().includes(searchQuery.trim().toLowerCase()),
@@ -24,11 +43,18 @@ export function WorkspaceView({ workspace, onAddModule, onRemoveModule, lockLayo
           const definition = getModuleDefinition(moduleInstance.type);
           if (!definition) return null;
           const { Component } = definition;
+          const titleUrl = getTitleUrl(moduleInstance.type, githubProfileUrl);
 
           return (
             <div className="module-card" key={moduleInstance.id}>
               <div className="module-card-header">
-                <span>{definition.title}</span>
+                {titleUrl ? (
+                  <a href={titleUrl} target="_blank" rel="noreferrer">
+                    {definition.title}
+                  </a>
+                ) : (
+                  <span>{definition.title}</span>
+                )}
                 {!lockLayout && (
                   <button
                     aria-label={`Remove ${definition.title}`}
