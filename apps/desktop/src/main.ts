@@ -5,22 +5,27 @@ import url from "node:url";
 import windowStateKeeper from "electron-window-state";
 import { CONFIG_DIR } from "@productivityhub/core";
 import { listMyRepos } from "@productivityhub/github";
-import type { Workspace } from "./types.js";
+import type { WorkspaceState } from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const WORKSPACES_FILE = path.join(CONFIG_DIR, "workspaces.json");
 
-function getWorkspaces(): Workspace[] {
+function getWorkspaceState(): WorkspaceState {
   try {
-    return JSON.parse(fs.readFileSync(WORKSPACES_FILE, "utf-8")) as Workspace[];
+    const raw = JSON.parse(fs.readFileSync(WORKSPACES_FILE, "utf-8"));
+    // Back-compat: older files stored a plain Workspace[] with no activeId.
+    if (Array.isArray(raw)) {
+      return { activeId: raw[0]?.id ?? "", workspaces: raw };
+    }
+    return raw as WorkspaceState;
   } catch {
-    return [];
+    return { activeId: "", workspaces: [] };
   }
 }
 
-function saveWorkspaces(workspaces: Workspace[]): void {
+function saveWorkspaceState(state: WorkspaceState): void {
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(WORKSPACES_FILE, JSON.stringify(workspaces, null, 2));
+  fs.writeFileSync(WORKSPACES_FILE, JSON.stringify(state, null, 2));
 }
 
 function createWindow(): void {
@@ -52,9 +57,9 @@ function createWindow(): void {
 }
 
 ipcMain.handle("github:list-repos", () => listMyRepos());
-ipcMain.handle("config:get-workspaces", () => getWorkspaces());
-ipcMain.handle("config:save-workspaces", (_event, workspaces: Workspace[]) =>
-  saveWorkspaces(workspaces),
+ipcMain.handle("config:get-workspaces", () => getWorkspaceState());
+ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) =>
+  saveWorkspaceState(state),
 );
 
 app.whenReady().then(createWindow);

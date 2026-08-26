@@ -16,18 +16,19 @@ export function useWorkspaces() {
   const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
-    window.api.getWorkspaces().then((loaded) => {
-      const initial = loaded.length > 0 ? loaded : defaultWorkspaces();
+    window.api.getWorkspaces().then((state) => {
+      const initial = state.workspaces.length > 0 ? state.workspaces : defaultWorkspaces();
       setWorkspaces(initial);
-      setActiveId(initial[0].id);
+      const restored = initial.some((workspace) => workspace.id === state.activeId);
+      setActiveId(restored ? state.activeId : initial[0].id);
     });
   }, []);
 
   useEffect(() => {
     if (workspaces) {
-      window.api.saveWorkspaces(workspaces);
+      window.api.saveWorkspaces({ activeId, workspaces });
     }
-  }, [workspaces]);
+  }, [workspaces, activeId]);
 
   useEffect(() => {
     if (workspaces && !workspaces.some((workspace) => workspace.id === activeId)) {

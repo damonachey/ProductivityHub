@@ -8,3 +8,8 @@ export interface Workspace {
   name: string;
   modules: ModuleInstance[];
 }
+
+export interface WorkspaceState {
+  activeId: string;
+  workspaces: Workspace[];
+}
