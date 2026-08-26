@@ -18,6 +18,8 @@ Lists your GitHub repos, most recently updated first. This is the first working 
 
 `packages/core` loads `.env` automatically (resolved relative to the repo, not the current directory), so no manual `$env:` / `export` is needed once it's filled in.
 
+The desktop app (`.\phdesktop.cmd`, or `pnpm --filter @productivityhub/desktop build && pnpm --filter @productivityhub/desktop start`) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. Workspace/module layout persists locally. Only the GitHub Repos module is wired to real data so far; Gmail/Tasks/Calendar modules are placeholders.
+
 ## Layout
 
 ```
