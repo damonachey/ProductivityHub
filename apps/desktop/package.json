@@ -3,17 +3,38 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "description": "ProductivityHub desktop app",
+  "author": "Damon Achey",
   "main": "./dist/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "electron .",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "package": "electron-builder"
   },
   "dependencies": {
     "@productivityhub/core": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^26.3.0",
-    "electron": "^44.0.0"
+    "electron": "^44.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "net.achey.productivityhub.desktop",
+    "productName": "ProductivityHub",
+    "directories": {
+      "output": "release"
+    },
+    "files": ["dist/**/*", "package.json"],
+    "win": {
+      "target": ["portable"]
+    },
+    "mac": {
+      "target": ["zip"]
+    },
+    "linux": {
+      "target": ["AppImage"]
+    }
   }
 }

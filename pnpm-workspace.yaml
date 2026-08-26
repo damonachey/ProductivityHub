@@ -3,4 +3,5 @@ packages:
   - "packages/core"
   - "packages/services/*"
 allowBuilds:
+  electron-winstaller: true
   esbuild: true
