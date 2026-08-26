@@ -9,7 +9,7 @@ export interface ModuleDefinition {
   Component: ComponentType;
 }
 
-export const MODULE_REGISTRY: ModuleDefinition[] = [
+const MODULE_DEFINITIONS: ModuleDefinition[] = [
   { type: "github-repos", title: "GitHub Repos", Component: GithubReposModule },
   {
     type: "github-notifications",
@@ -32,6 +32,10 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
     Component: () => <PlaceholderModule title="Google Calendar" />,
   },
 ];
+
+export const MODULE_REGISTRY: ModuleDefinition[] = [...MODULE_DEFINITIONS].sort((a, b) =>
+  a.title.localeCompare(b.title),
+);
 
 export function getModuleDefinition(type: string): ModuleDefinition | undefined {
   return MODULE_REGISTRY.find((definition) => definition.type === type);
