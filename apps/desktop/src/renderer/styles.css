@@ -1,0 +1,176 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #1e1f22;
+  color: #e4e4e7;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.tab-bar {
+  display: flex;
+  align-items: center;
+  background: #141517;
+  border-bottom: 1px solid #2a2b2e;
+  -webkit-app-region: drag;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  cursor: pointer;
+  color: #a1a1aa;
+  border-right: 1px solid #2a2b2e;
+  -webkit-app-region: no-drag;
+}
+
+.tab.active {
+  color: #fff;
+  background: #1e1f22;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.tab-add {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 16px;
+  -webkit-app-region: no-drag;
+}
+
+.tab-add:hover,
+.tab-close:hover {
+  color: #fff;
+}
+
+.workspace-view {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.module-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.module-card {
+  background: #26272b;
+  border: 1px solid #2a2b2e;
+  border-radius: 8px;
+  min-width: 280px;
+  max-width: 360px;
+  flex: 1 1 280px;
+}
+
+.module-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #2a2b2e;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.module-card-header button {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.module-card-header button:hover {
+  color: #fff;
+}
+
+.module-card-body {
+  padding: 12px;
+  font-size: 13px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.module-placeholder {
+  color: #71717a;
+  font-style: italic;
+}
+
+.module-error {
+  color: #f87171;
+}
+
+.repo-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.module-card-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  border-style: dashed;
+}
+
+.module-card-add button {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.module-card-add button:hover {
+  color: #fff;
+}
+
+.module-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  width: 100%;
+}
+
+.module-picker button {
+  text-align: left;
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.module-picker button:hover {
+  background: #2a2b2e;
+}
