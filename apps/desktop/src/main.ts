@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, shell } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
@@ -40,6 +40,13 @@ function createWindow(): void {
   });
 
   windowState.manage(window);
+
+  // Any target="_blank" link (or window.open()) opens in the OS default
+  // browser instead of a new Electron window.
+  window.webContents.setWindowOpenHandler(({ url: targetUrl }) => {
+    shell.openExternal(targetUrl);
+    return { action: "deny" };
+  });
 
   window.loadFile(path.join(dirname, "renderer", "index.html"));
 }

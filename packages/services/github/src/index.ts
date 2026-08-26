@@ -5,6 +5,7 @@ export interface RepoSummary {
   name: string;
   private: boolean;
   updatedAt: string | null;
+  htmlUrl: string;
 }
 
 function createClient(): Octokit {
@@ -22,5 +23,6 @@ export async function listMyRepos(): Promise<RepoSummary[]> {
     name: repo.full_name,
     private: repo.private,
     updatedAt: repo.updated_at ?? null,
+    htmlUrl: repo.html_url,
   }));
 }

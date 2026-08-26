@@ -24,7 +24,9 @@ export function GithubReposModule() {
     <ul className="repo-list">
       {repos.map((repo) => (
         <li key={repo.name}>
-          {repo.name} ({repo.private ? "private" : "public"}) — updated {repo.updatedAt}
+          <a href={repo.htmlUrl} target="_blank" rel="noreferrer">
+            {repo.name} ({repo.private ? "private" : "public"}) — updated {repo.updatedAt}
+          </a>
         </li>
       ))}
     </ul>
