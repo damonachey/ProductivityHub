@@ -56,6 +56,9 @@ export function WorkspaceView({ workspace, onAddModule, onRemoveModule, lockLayo
                   autoFocus
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") setPickerOpen(false);
+                  }}
                 />
                 {filteredModules.length > 0 ? (
                   filteredModules.map((definition) => (
