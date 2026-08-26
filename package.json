@@ -5,5 +5,9 @@
   "packageManager": "pnpm@11.24.0",
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "typescript": "^7.0.2"
   }
 }
