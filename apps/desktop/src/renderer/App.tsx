@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { TabBar } from "./TabBar";
 import { WorkspaceView } from "./WorkspaceView";
 import { useWorkspaces } from "./useWorkspaces";
@@ -16,6 +17,33 @@ export function App() {
     rememberActiveTab,
     setRememberActiveTab,
   } = useWorkspaces();
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (!event.ctrlKey || !workspaces || workspaces.length === 0) return;
+
+      if (event.key === "Tab") {
+        event.preventDefault();
+        const currentIndex = workspaces.findIndex((workspace) => workspace.id === activeId);
+        const direction = event.shiftKey ? -1 : 1;
+        const nextIndex = (currentIndex + direction + workspaces.length) % workspaces.length;
+        setActiveId(workspaces[nextIndex].id);
+        return;
+      }
+
+      const tabNumber = Number(event.key);
+      if (tabNumber >= 1 && tabNumber <= 9) {
+        const workspace = workspaces[tabNumber - 1];
+        if (workspace) {
+          event.preventDefault();
+          setActiveId(workspace.id);
+        }
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [workspaces, activeId, setActiveId]);
 
   if (!workspaces) {
     return <div className="app-loading">Loading…</div>;
