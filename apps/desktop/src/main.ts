@@ -4,7 +4,7 @@ import path from "node:path";
 import url from "node:url";
 import windowStateKeeper from "electron-window-state";
 import { CONFIG_DIR } from "@productivityhub/core";
-import { listMyRepos } from "@productivityhub/github";
+import { listMyRepos, listMyNotifications } from "@productivityhub/github";
 import type { AppSettings, WorkspaceState } from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -76,6 +76,7 @@ function createWindow(): void {
 }
 
 ipcMain.handle("github:list-repos", () => listMyRepos());
+ipcMain.handle("github:list-notifications", () => listMyNotifications());
 ipcMain.handle("config:get-workspaces", () => getWorkspaceState());
 ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) =>
   saveWorkspaceState(state),

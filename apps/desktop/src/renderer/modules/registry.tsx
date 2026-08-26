@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { GithubReposModule } from "./GithubReposModule";
+import { GithubNotificationsModule } from "./GithubNotificationsModule";
 import { PlaceholderModule } from "./PlaceholderModule";
 
 export interface ModuleDefinition {
@@ -10,6 +11,11 @@ export interface ModuleDefinition {
 
 export const MODULE_REGISTRY: ModuleDefinition[] = [
   { type: "github-repos", title: "GitHub Repos", Component: GithubReposModule },
+  {
+    type: "github-notifications",
+    title: "GitHub Notifications",
+    Component: GithubNotificationsModule,
+  },
   {
     type: "gmail-inbox",
     title: "Gmail Inbox",
