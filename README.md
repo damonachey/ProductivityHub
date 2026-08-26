@@ -4,11 +4,15 @@ Electron desktop app and `ph` CLI for productivity tools, starting with Gmail, G
 
 ## Usage
 
-Copy `.env.example` to `.env` at the repo root and fill in real values (`.env` is gitignored):
+All config lives in one place, outside the repo: `~/.productivityhub/` (works the same whether you're running from source or a distributed portable exe, which has no "repo" on disk). Create `~/.productivityhub/config.json`:
 
+```json
+{
+  "GITHUB_TOKEN": "<a personal access token>"
+}
 ```
-cp .env.example .env
-```
+
+`packages/core`'s `requireEnv()` reads from this file (an actual environment variable of the same name still takes precedence, e.g. `GITHUB_TOKEN=... ph gh repos`, useful for CI or one-off overrides).
 
 ```
 ph gh repos
@@ -16,9 +20,17 @@ ph gh repos
 
 Lists your GitHub repos, most recently updated first. This is the first working integration; the others are still scaffolding.
 
-`packages/core` loads `.env` automatically (resolved relative to the repo, not the current directory), so no manual `$env:` / `export` is needed once it's filled in.
+The desktop app (`.\phdesktop.cmd`, or `pnpm --filter @productivityhub/desktop build && pnpm --filter @productivityhub/desktop start`) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. Only the GitHub Repos module is wired to real data so far; Gmail/Tasks/Calendar modules are placeholders.
 
-The desktop app (`.\phdesktop.cmd`, or `pnpm --filter @productivityhub/desktop build && pnpm --filter @productivityhub/desktop start`) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. Workspace/module layout persists locally. Only the GitHub Repos module is wired to real data so far; Gmail/Tasks/Calendar modules are placeholders.
+### Where things are stored
+
+| What | Where |
+| --- | --- |
+| Secrets (`GITHUB_TOKEN`, etc.) | `~/.productivityhub/config.json` |
+| Desktop workspace/module layout | `~/.productivityhub/workspaces.json` |
+| Desktop window size/position | `%APPDATA%\@productivityhub\desktop\window-state.json` (Electron-chrome-specific, kept separate) |
+
+The first two are shared by both the CLI and the desktop app and owned by `packages/core` / the desktop main process respectively; window state is Electron-only so it stays in Electron's own per-app userData dir.
 
 ## Layout
 

@@ -15,6 +15,14 @@ body {
   height: 100vh;
 }
 
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #71717a;
+}
+
 .tab-bar {
   display: flex;
   align-items: center;

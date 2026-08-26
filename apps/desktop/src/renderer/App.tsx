@@ -14,6 +14,10 @@ export function App() {
     removeModule,
   } = useWorkspaces();
 
+  if (!workspaces) {
+    return <div className="app-loading">Loading…</div>;
+  }
+
   const activeWorkspace = workspaces.find((workspace) => workspace.id === activeId) ?? workspaces[0];
 
   return (
