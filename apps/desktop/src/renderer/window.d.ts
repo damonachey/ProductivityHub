@@ -1,4 +1,5 @@
 import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
+import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { AppSettings, NotesState, WorkspaceState } from "../types";
 
 declare global {
@@ -7,6 +8,7 @@ declare global {
       listRepos: () => Promise<RepoSummary[]>;
       listNotifications: () => Promise<NotificationSummary[]>;
       getGithubProfileUrl: () => Promise<string>;
+      getSlashdotHeadlines: () => Promise<SlashdotHeadline[]>;
       getWorkspaces: () => Promise<WorkspaceState>;
       saveWorkspaces: (state: WorkspaceState) => Promise<void>;
       getSettings: () => Promise<AppSettings>;

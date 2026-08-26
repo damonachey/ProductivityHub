@@ -13,6 +13,9 @@ function getTitleUrl(type: string, githubProfileUrl: string | null): string | un
   if (type === "github-notifications") {
     return "https://github.com/notifications";
   }
+  if (type === "slashdot") {
+    return "https://slashdot.org";
+  }
   return undefined;
 }
 
