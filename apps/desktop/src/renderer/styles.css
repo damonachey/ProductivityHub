@@ -144,6 +144,10 @@ body {
   cursor: pointer;
 }
 
+.settings-checkbox + .settings-checkbox {
+  margin-top: 6px;
+}
+
 .workspace-view {
   flex: 1;
   overflow: auto;

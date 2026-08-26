@@ -16,4 +16,5 @@ export interface WorkspaceState {
 
 export interface AppSettings {
   rememberActiveTab: boolean;
+  lockLayout: boolean;
 }

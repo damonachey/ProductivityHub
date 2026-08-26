@@ -11,6 +11,8 @@ interface Props {
   onReorder: (draggedId: string, targetId: string) => void;
   rememberActiveTab: boolean;
   onSetRememberActiveTab: (value: boolean) => void;
+  lockLayout: boolean;
+  onSetLockLayout: (value: boolean) => void;
 }
 
 export function TabBar({
@@ -23,6 +25,8 @@ export function TabBar({
   onReorder,
   rememberActiveTab,
   onSetRememberActiveTab,
+  lockLayout,
+  onSetLockLayout,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
@@ -114,13 +118,15 @@ export function TabBar({
           )}
         </div>
       ))}
-      <button
-        className="tab-add"
-        aria-label="Add workspace"
-        onClick={() => startEditing(onAdd())}
-      >
-        +
-      </button>
+      {!lockLayout && (
+        <button
+          className="tab-add"
+          aria-label="Add workspace"
+          onClick={() => startEditing(onAdd())}
+        >
+          +
+        </button>
+      )}
 
       <div className="tab-settings-wrapper">
         <button
@@ -142,6 +148,14 @@ export function TabBar({
                   onChange={(event) => onSetRememberActiveTab(event.target.checked)}
                 />
                 Remember active tab
+              </label>
+              <label className="settings-checkbox">
+                <input
+                  type="checkbox"
+                  checked={lockLayout}
+                  onChange={(event) => onSetLockLayout(event.target.checked)}
+                />
+                Lock layout
               </label>
             </div>
           </>

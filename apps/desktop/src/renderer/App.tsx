@@ -16,6 +16,8 @@ export function App() {
     reorderWorkspaces,
     rememberActiveTab,
     setRememberActiveTab,
+    lockLayout,
+    setLockLayout,
   } = useWorkspaces();
 
   useEffect(() => {
@@ -63,11 +65,14 @@ export function App() {
         onReorder={reorderWorkspaces}
         rememberActiveTab={rememberActiveTab}
         onSetRememberActiveTab={setRememberActiveTab}
+        lockLayout={lockLayout}
+        onSetLockLayout={setLockLayout}
       />
       <WorkspaceView
         workspace={activeWorkspace}
         onAddModule={(type) => addModule(activeWorkspace.id, type)}
         onRemoveModule={(moduleId) => removeModule(activeWorkspace.id, moduleId)}
+        lockLayout={lockLayout}
       />
     </div>
   );

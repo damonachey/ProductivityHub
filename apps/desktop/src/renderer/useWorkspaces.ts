@@ -15,6 +15,7 @@ export function useWorkspaces() {
   const [workspaces, setWorkspaces] = useState<Workspace[] | null>(null);
   const [activeId, setActiveId] = useState<string>("");
   const [rememberActiveTab, setRememberActiveTabState] = useState(true);
+  const [lockLayout, setLockLayoutState] = useState(false);
 
   useEffect(() => {
     Promise.all([window.api.getWorkspaces(), window.api.getSettings()]).then(
@@ -22,6 +23,7 @@ export function useWorkspaces() {
         const initial = state.workspaces.length > 0 ? state.workspaces : defaultWorkspaces();
         setWorkspaces(initial);
         setRememberActiveTabState(settings.rememberActiveTab);
+        setLockLayoutState(settings.lockLayout);
 
         if (settings.rememberActiveTab) {
           const restored = initial.some((workspace) => workspace.id === state.activeId);
@@ -39,10 +41,21 @@ export function useWorkspaces() {
     }
   }, [workspaces, activeId]);
 
-  const setRememberActiveTab = useCallback((value: boolean) => {
-    setRememberActiveTabState(value);
-    window.api.saveSettings({ rememberActiveTab: value });
-  }, []);
+  const setRememberActiveTab = useCallback(
+    (value: boolean) => {
+      setRememberActiveTabState(value);
+      window.api.saveSettings({ rememberActiveTab: value, lockLayout });
+    },
+    [lockLayout],
+  );
+
+  const setLockLayout = useCallback(
+    (value: boolean) => {
+      setLockLayoutState(value);
+      window.api.saveSettings({ rememberActiveTab, lockLayout: value });
+    },
+    [rememberActiveTab],
+  );
 
   useEffect(() => {
     if (workspaces && !workspaces.some((workspace) => workspace.id === activeId)) {
@@ -121,5 +134,7 @@ export function useWorkspaces() {
     reorderWorkspaces,
     rememberActiveTab,
     setRememberActiveTab,
+    lockLayout,
+    setLockLayout,
   };
 }

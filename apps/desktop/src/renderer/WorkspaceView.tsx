@@ -6,9 +6,10 @@ interface Props {
   workspace: Workspace;
   onAddModule: (type: string) => void;
   onRemoveModule: (moduleId: string) => void;
+  lockLayout: boolean;
 }
 
-export function WorkspaceView({ workspace, onAddModule, onRemoveModule }: Props) {
+export function WorkspaceView({ workspace, onAddModule, onRemoveModule, lockLayout }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
@@ -23,12 +24,14 @@ export function WorkspaceView({ workspace, onAddModule, onRemoveModule }: Props)
             <div className="module-card" key={moduleInstance.id}>
               <div className="module-card-header">
                 <span>{definition.title}</span>
-                <button
-                  aria-label={`Remove ${definition.title}`}
-                  onClick={() => onRemoveModule(moduleInstance.id)}
-                >
-                  ×
-                </button>
+                {!lockLayout && (
+                  <button
+                    aria-label={`Remove ${definition.title}`}
+                    onClick={() => onRemoveModule(moduleInstance.id)}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
               <div className="module-card-body">
                 <Component />
@@ -37,25 +40,27 @@ export function WorkspaceView({ workspace, onAddModule, onRemoveModule }: Props)
           );
         })}
 
-        <div className="module-card module-card-add">
-          {pickerOpen ? (
-            <div className="module-picker">
-              {MODULE_REGISTRY.map((definition) => (
-                <button
-                  key={definition.type}
-                  onClick={() => {
-                    onAddModule(definition.type);
-                    setPickerOpen(false);
-                  }}
-                >
-                  {definition.title}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <button onClick={() => setPickerOpen(true)}>+ Add module</button>
-          )}
-        </div>
+        {!lockLayout && (
+          <div className="module-card module-card-add">
+            {pickerOpen ? (
+              <div className="module-picker">
+                {MODULE_REGISTRY.map((definition) => (
+                  <button
+                    key={definition.type}
+                    onClick={() => {
+                      onAddModule(definition.type);
+                      setPickerOpen(false);
+                    }}
+                  >
+                    {definition.title}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button onClick={() => setPickerOpen(true)}>+ Add module</button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

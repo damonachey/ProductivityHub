@@ -11,7 +11,7 @@ const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const WORKSPACES_FILE = path.join(CONFIG_DIR, "workspaces.json");
 const SETTINGS_FILE = path.join(CONFIG_DIR, "settings.json");
 
-const DEFAULT_SETTINGS: AppSettings = { rememberActiveTab: true };
+const DEFAULT_SETTINGS: AppSettings = { rememberActiveTab: true, lockLayout: false };
 
 function getWorkspaceState(): WorkspaceState {
   try {
