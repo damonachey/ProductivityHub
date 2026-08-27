@@ -19,10 +19,21 @@ import {
   markThreadUnread,
   trashThread,
 } from "@productivityhub/google-mail";
+import {
+  authenticate as authenticateGoogleTasks,
+  createTask as createGoogleTask,
+  deleteTask as deleteGoogleTask,
+  disconnect as disconnectGoogleTasks,
+  isAuthenticated as isGoogleTasksAuthenticated,
+  listTasks as listGoogleTasks,
+  setTaskStatus as setGoogleTaskStatus,
+  type CreateTaskInput,
+} from "@productivityhub/google-tasks";
 import type {
   AppSettings,
   BookmarkItem,
   BookmarksState,
+  GoogleTasksFiltersState,
   NotesState,
   Rect,
   StockChartsState,
@@ -41,6 +52,7 @@ const BOOKMARKS_FILE = path.join(CONFIG_DIR, "bookmarks.json");
 const WEBPAGES_FILE = path.join(CONFIG_DIR, "webpages.json");
 const STOCKS_FILE = path.join(CONFIG_DIR, "stocks.json");
 const STOCK_CHARTS_FILE = path.join(CONFIG_DIR, "stock-charts.json");
+const GOOGLE_TASKS_FILTERS_FILE = path.join(CONFIG_DIR, "google-tasks-filters.json");
 
 let mainWindow: BrowserWindow | null = null;
 const webPageViews = new Map<string, WebContentsView>();
@@ -154,6 +166,21 @@ function saveStockChartSymbol(moduleId: string, symbol: string): void {
   charts[moduleId] = symbol;
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
   fs.writeFileSync(STOCK_CHARTS_FILE, JSON.stringify(charts, null, 2));
+}
+
+function getGoogleTasksFilters(): GoogleTasksFiltersState {
+  try {
+    return JSON.parse(fs.readFileSync(GOOGLE_TASKS_FILTERS_FILE, "utf-8")) as GoogleTasksFiltersState;
+  } catch {
+    return {};
+  }
+}
+
+function saveGoogleTasksFilters(moduleId: string, filters: string[]): void {
+  const all = getGoogleTasksFilters();
+  all[moduleId] = filters;
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(GOOGLE_TASKS_FILTERS_FILE, JSON.stringify(all, null, 2));
 }
 
 function getWebPages(): WebPagesState {
@@ -278,6 +305,28 @@ function createWindow(): void {
     return { action: "deny" };
   });
 
+  // Modules like Google Tasks delay committing an action (e.g. completing a
+  // task) behind a short "pie timer" undo window. If the app quits while one
+  // is still pending, skip the wait and let the renderer flush it now rather
+  // than losing the action. `closeConfirmed` avoids re-entering this on the
+  // second, renderer-triggered close; the timeout is a safety net in case
+  // the renderer never acks (e.g. it crashed).
+  let closeConfirmed = false;
+  window.on("close", (event) => {
+    if (closeConfirmed) return;
+    event.preventDefault();
+    window.webContents.send("app:flush-before-quit");
+    setTimeout(() => {
+      if (closeConfirmed) return;
+      closeConfirmed = true;
+      window.close();
+    }, 4000);
+  });
+  ipcMain.on("app:flush-complete", () => {
+    closeConfirmed = true;
+    window.close();
+  });
+
   window.loadFile(path.join(dirname, "renderer", "index.html"));
 }
 
@@ -318,6 +367,25 @@ ipcMain.handle("gmail:mark-read", (_event, threadId: string) => markThreadRead(t
 ipcMain.handle("gmail:mark-unread", (_event, threadId: string) => markThreadUnread(threadId));
 ipcMain.handle("gmail:archive", (_event, threadId: string) => archiveThread(threadId));
 ipcMain.handle("gmail:trash", (_event, threadId: string) => trashThread(threadId));
+ipcMain.handle("google-tasks:is-authenticated", () => isGoogleTasksAuthenticated());
+ipcMain.handle("google-tasks:authenticate", () =>
+  authenticateGoogleTasks((authUrl) => shell.openExternal(authUrl)),
+);
+ipcMain.handle("google-tasks:disconnect", () => disconnectGoogleTasks());
+ipcMain.handle("google-tasks:list", () => listGoogleTasks());
+ipcMain.handle("google-tasks:create", (_event, input: CreateTaskInput) => createGoogleTask(input));
+ipcMain.handle(
+  "google-tasks:set-status",
+  (_event, taskId: string, status: "needsAction" | "completed") =>
+    setGoogleTaskStatus(taskId, status),
+);
+ipcMain.handle("google-tasks:delete", (_event, taskId: string) => deleteGoogleTask(taskId));
+ipcMain.handle("google-tasks:get-filters", (_event, moduleId: string) =>
+  getGoogleTasksFilters()[moduleId] ?? null,
+);
+ipcMain.handle("google-tasks:save-filters", (_event, moduleId: string, filters: string[]) =>
+  saveGoogleTasksFilters(moduleId, filters),
+);
 ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
 ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
   const view = ensureWebPageView(moduleId);

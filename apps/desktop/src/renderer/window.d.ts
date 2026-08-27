@@ -4,6 +4,7 @@ import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
 import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import type { GmailThreadSummary } from "@productivityhub/google-mail";
+import type { CreateTaskInput, GoogleTask } from "@productivityhub/google-tasks";
 import type {
   AppSettings,
   BookmarkItem,
@@ -46,6 +47,15 @@ declare global {
       markGmailThreadUnread: (threadId: string) => Promise<void>;
       archiveGmailThread: (threadId: string) => Promise<void>;
       trashGmailThread: (threadId: string) => Promise<void>;
+      isGoogleTasksAuthenticated: () => Promise<boolean>;
+      authenticateGoogleTasks: () => Promise<void>;
+      disconnectGoogleTasks: () => Promise<void>;
+      listGoogleTasks: () => Promise<GoogleTask[]>;
+      createGoogleTask: (input: CreateTaskInput) => Promise<GoogleTask>;
+      setGoogleTaskStatus: (taskId: string, status: "needsAction" | "completed") => Promise<void>;
+      deleteGoogleTask: (taskId: string) => Promise<void>;
+      getGoogleTasksFilters: (moduleId: string) => Promise<string[] | null>;
+      saveGoogleTasksFilters: (moduleId: string, filters: string[]) => Promise<void>;
       getWebPageUrl: (moduleId: string) => Promise<string>;
       syncWebPage: (moduleId: string, bounds: Rect) => Promise<void>;
       hideWebPage: (moduleId: string) => Promise<void>;
@@ -54,6 +64,8 @@ declare global {
       webPageGoForward: (moduleId: string) => Promise<void>;
       webPageReload: (moduleId: string) => Promise<void>;
       onWebPageNavigated: (callback: (moduleId: string, pageUrl: string) => void) => () => void;
+      onFlushBeforeQuit: (callback: () => void) => () => void;
+      notifyFlushComplete: () => void;
     };
   }
 }

@@ -909,3 +909,220 @@ body {
   color: #52525b;
   cursor: default;
 }
+
+@property --gtask-pie-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.gtask-connect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.gtask-connect button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.gtask-connect button:hover:not(:disabled) {
+  background: #2a2b2e;
+}
+
+.gtask-connect button:disabled {
+  color: #71717a;
+  cursor: default;
+}
+
+.gtasks {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gtask-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gtask-filter {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #a1a1aa;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.gtask-filter:hover {
+  color: #e4e4e7;
+}
+
+.gtask-filter-active {
+  background: #35306b;
+  border-color: #6366f1;
+  color: #fff;
+}
+
+.gtask-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gtask-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.gtask-checkbox {
+  margin-top: 2px;
+  width: 15px;
+  height: 15px;
+  min-width: 15px;
+  border-radius: 50%;
+  border: 1.5px solid #52525b;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.gtask-checkbox-checked {
+  background: #4ade80;
+  border-color: #4ade80;
+}
+
+.gtask-checkbox-pending {
+  border: none;
+  --gtask-pie-angle: 0deg;
+  background: conic-gradient(#6366f1 var(--gtask-pie-angle), #3f3f46 var(--gtask-pie-angle));
+  animation: gtask-pie-spin 5s linear forwards;
+}
+
+@keyframes gtask-pie-spin {
+  from {
+    --gtask-pie-angle: 0deg;
+  }
+  to {
+    --gtask-pie-angle: 360deg;
+  }
+}
+
+.gtask-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.gtask-title {
+  color: #e4e4e7;
+}
+
+.gtask-body-completing .gtask-title {
+  color: #71717a;
+  text-decoration: line-through;
+}
+
+.gtask-notes {
+  margin: 0;
+  color: #71717a;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gtask-due {
+  color: #71717a;
+  font-size: 11px;
+}
+
+.gtask-delete {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  flex-shrink: 0;
+}
+
+.gtask-delete:hover {
+  color: #fff;
+}
+
+.gtask-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gtask-input,
+.gtask-textarea {
+  background: #1e1f22;
+  border: 1px solid #3f3f46;
+  border-radius: 4px;
+  color: #e4e4e7;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.gtask-textarea {
+  resize: vertical;
+  min-height: 40px;
+}
+
+.gtask-input::placeholder,
+.gtask-textarea::placeholder {
+  color: #71717a;
+}
+
+.gtask-add-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.gtask-add-actions button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.gtask-add-actions button:hover {
+  background: #2a2b2e;
+}
+
+.gtask-add-button {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 2px;
+}
+
+.gtask-add-button:hover {
+  color: #fff;
+}

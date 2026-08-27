@@ -5,6 +5,7 @@ import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
 import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import type { GmailThreadSummary } from "@productivityhub/google-mail";
+import type { CreateTaskInput, GoogleTask } from "@productivityhub/google-tasks";
 import type {
   AppSettings,
   BookmarkItem,
@@ -60,6 +61,21 @@ contextBridge.exposeInMainWorld("api", {
   archiveGmailThread: (threadId: string): Promise<void> =>
     ipcRenderer.invoke("gmail:archive", threadId),
   trashGmailThread: (threadId: string): Promise<void> => ipcRenderer.invoke("gmail:trash", threadId),
+  isGoogleTasksAuthenticated: (): Promise<boolean> =>
+    ipcRenderer.invoke("google-tasks:is-authenticated"),
+  authenticateGoogleTasks: (): Promise<void> => ipcRenderer.invoke("google-tasks:authenticate"),
+  disconnectGoogleTasks: (): Promise<void> => ipcRenderer.invoke("google-tasks:disconnect"),
+  listGoogleTasks: (): Promise<GoogleTask[]> => ipcRenderer.invoke("google-tasks:list"),
+  createGoogleTask: (input: CreateTaskInput): Promise<GoogleTask> =>
+    ipcRenderer.invoke("google-tasks:create", input),
+  setGoogleTaskStatus: (taskId: string, status: "needsAction" | "completed"): Promise<void> =>
+    ipcRenderer.invoke("google-tasks:set-status", taskId, status),
+  deleteGoogleTask: (taskId: string): Promise<void> =>
+    ipcRenderer.invoke("google-tasks:delete", taskId),
+  getGoogleTasksFilters: (moduleId: string): Promise<string[] | null> =>
+    ipcRenderer.invoke("google-tasks:get-filters", moduleId),
+  saveGoogleTasksFilters: (moduleId: string, filters: string[]): Promise<void> =>
+    ipcRenderer.invoke("google-tasks:save-filters", moduleId, filters),
   getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
   syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
     ipcRenderer.invoke("webpage:sync", moduleId, bounds),
@@ -75,5 +91,13 @@ contextBridge.exposeInMainWorld("api", {
       callback(moduleId, pageUrl);
     ipcRenderer.on("webpage:navigated", listener);
     return () => ipcRenderer.removeListener("webpage:navigated", listener);
+  },
+  onFlushBeforeQuit: (callback: () => void): (() => void) => {
+    const listener = () => callback();
+    ipcRenderer.on("app:flush-before-quit", listener);
+    return () => ipcRenderer.removeListener("app:flush-before-quit", listener);
+  },
+  notifyFlushComplete: (): void => {
+    ipcRenderer.send("app:flush-complete");
   },
 });

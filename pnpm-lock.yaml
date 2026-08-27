@@ -51,6 +51,9 @@ importers:
       '@productivityhub/google-mail':
         specifier: workspace:*
         version: link:../../packages/services/google-mail
+      '@productivityhub/google-tasks':
+        specifier: workspace:*
+        version: link:../../packages/services/google-tasks
       '@productivityhub/hackernews':
         specifier: workspace:*
         version: link:../../packages/services/hackernews

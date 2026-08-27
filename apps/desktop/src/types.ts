@@ -24,6 +24,7 @@ export interface RefreshIntervalsMinutes {
   stockQuotes: number;
   stockChart: number;
   gmailInbox: number;
+  googleTasks: number;
 }
 
 // Shared with the renderer so a settings.json missing some (or all) of
@@ -39,6 +40,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   stockQuotes: 5,
   stockChart: 15,
   gmailInbox: 2,
+  googleTasks: 5,
 };
 
 export interface AppSettings {
@@ -84,3 +86,8 @@ export type StocksState = Record<string, StockItem[]>;
 // Keyed by module instance id: the configured symbol for a Stock Chart
 // module instance.
 export type StockChartsState = Record<string, string>;
+
+// Keyed by module instance id, so each Google Tasks module instance keeps
+// its own independent set of selected due-date filters (e.g.
+// ["pastDue", "today", "tomorrow"]).
+export type GoogleTasksFiltersState = Record<string, string[]>;

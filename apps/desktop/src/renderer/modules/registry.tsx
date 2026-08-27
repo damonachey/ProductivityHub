@@ -10,6 +10,7 @@ import { FreshRssModule } from "./FreshRssModule";
 import { StockQuotesModule } from "./StockQuotesModule";
 import { StockChartModule } from "./StockChartModule";
 import { GmailInboxModule } from "./GmailInboxModule";
+import { GoogleTasksModule } from "./GoogleTasksModule";
 import { PlaceholderModule } from "./PlaceholderModule";
 import type { ModuleProps } from "./types";
 
@@ -35,11 +36,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
   { type: "stock-quotes", title: "Stock Quotes", Component: StockQuotesModule },
   { type: "stock-chart", title: "Stock Chart", Component: StockChartModule },
   { type: "gmail-inbox", title: "Gmail Inbox", Component: GmailInboxModule },
-  {
-    type: "google-tasks",
-    title: "Google Tasks",
-    Component: () => <PlaceholderModule title="Google Tasks" />,
-  },
+  { type: "google-tasks", title: "Google Tasks", Component: GoogleTasksModule },
   {
     type: "google-calendar",
     title: "Google Calendar",

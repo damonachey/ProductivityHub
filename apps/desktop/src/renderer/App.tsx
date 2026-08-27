@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { TabBar } from "./TabBar";
 import { WorkspaceView } from "./WorkspaceView";
 import { useWorkspaces } from "./useWorkspaces";
+import { flushAllPending } from "./pendingActions";
 
 export function App() {
   const {
@@ -48,6 +49,12 @@ export function App() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [workspaces, activeId, setActiveId]);
+
+  useEffect(() => {
+    return window.api.onFlushBeforeQuit(() => {
+      flushAllPending().finally(() => window.api.notifyFlushComplete());
+    });
+  }, []);
 
   if (!workspaces) {
     return <div className="app-loading">Loading…</div>;
