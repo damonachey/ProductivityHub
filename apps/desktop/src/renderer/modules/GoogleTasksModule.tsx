@@ -292,7 +292,14 @@ export function GoogleTasksModule({ moduleId, lockLayout, refreshIntervalsMinute
                 onClick={() => toggleCompletion(task)}
               />
               <div className={effectiveCompleted ? "gtask-body gtask-body-completing" : "gtask-body"}>
-                <span className="gtask-title">{task.title}</span>
+                <a
+                  className="gtask-title"
+                  href="https://tasks.google.com/tasks/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {task.title}
+                </a>
                 {task.notes && <p className="gtask-notes">{task.notes}</p>}
                 {task.due && <span className="gtask-due">{formatDue(task.due)}</span>}
               </div>
