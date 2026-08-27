@@ -1,6 +1,10 @@
 export interface ModuleInstance {
   id: string;
   type: string;
+  // User-set override for the card header title (e.g. distinguishing two
+  // Weather modules for different cities). Falls back to the registry's
+  // per-type default title when unset.
+  title?: string;
 }
 
 export interface Workspace {
@@ -27,6 +31,7 @@ export interface RefreshIntervalsMinutes {
   googleTasks: number;
   googleCalendarList: number;
   googleCalendarGrid: number;
+  weather: number;
 }
 
 // Shared with the renderer so a settings.json missing some (or all) of
@@ -45,6 +50,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   googleTasks: 5,
   googleCalendarList: 5,
   googleCalendarGrid: 5,
+  weather: 15,
 };
 
 export interface AppSettings {
@@ -95,3 +101,7 @@ export type StockChartsState = Record<string, string>;
 // its own independent set of selected due-date filters (e.g.
 // ["pastDue", "today", "tomorrow"]).
 export type GoogleTasksFiltersState = Record<string, string[]>;
+
+// Keyed by module instance id: the configured location (zip, "City, State",
+// or PWS station id) for a Weather module instance.
+export type WeatherLocationsState = Record<string, string>;

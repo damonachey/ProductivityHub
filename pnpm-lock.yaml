@@ -60,6 +60,9 @@ importers:
       '@productivityhub/hackernews':
         specifier: workspace:*
         version: link:../../packages/services/hackernews
+      '@productivityhub/open-meteo':
+        specifier: workspace:*
+        version: link:../../packages/services/open-meteo
       '@productivityhub/slashdot':
         specifier: workspace:*
         version: link:../../packages/services/slashdot
@@ -158,6 +161,12 @@ importers:
         version: 26.3.0
 
   packages/services/hackernews:
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
+
+  packages/services/open-meteo:
     devDependencies:
       '@types/node':
         specifier: ^26.3.0

@@ -6,6 +6,7 @@ import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import type { GmailThreadSummary } from "@productivityhub/google-mail";
 import type { CreateTaskInput, GoogleTask } from "@productivityhub/google-tasks";
 import type { CalendarEvent } from "@productivityhub/google-calendar";
+import type { WeatherForecast } from "@productivityhub/open-meteo";
 import type {
   AppSettings,
   BookmarkItem,
@@ -62,6 +63,9 @@ declare global {
       disconnectGoogleCalendar: () => Promise<void>;
       listGoogleCalendarEvents: () => Promise<CalendarEvent[]>;
       listGoogleCalendarEventsInRange: (timeMin: string, timeMax: string) => Promise<CalendarEvent[]>;
+      getWeatherLocation: (moduleId: string) => Promise<string>;
+      saveWeatherLocation: (moduleId: string, location: string) => Promise<void>;
+      getWeatherForecast: (location: string) => Promise<WeatherForecast>;
       getWebPageUrl: (moduleId: string) => Promise<string>;
       syncWebPage: (moduleId: string, bounds: Rect) => Promise<void>;
       hideWebPage: (moduleId: string) => Promise<void>;

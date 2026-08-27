@@ -112,6 +112,21 @@ export function useWorkspaces() {
     );
   }, []);
 
+  const renameModule = useCallback((workspaceId: string, moduleId: string, title: string) => {
+    setWorkspaces((prev) =>
+      (prev ?? []).map((workspace) =>
+        workspace.id === workspaceId
+          ? {
+              ...workspace,
+              modules: workspace.modules.map((m) =>
+                m.id === moduleId ? { ...m, title: title || undefined } : m,
+              ),
+            }
+          : workspace,
+      ),
+    );
+  }, []);
+
   const reorderModules = useCallback(
     (workspaceId: string, draggedId: string, targetId: string) => {
       setWorkspaces((prev) =>
@@ -156,6 +171,7 @@ export function useWorkspaces() {
     renameWorkspace,
     addModule,
     removeModule,
+    renameModule,
     reorderModules,
     reorderWorkspaces,
     rememberActiveTab,

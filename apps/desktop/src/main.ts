@@ -36,6 +36,7 @@ import {
   listUpcomingEvents,
   listEventsInRange as listGoogleCalendarEventsInRange,
 } from "@productivityhub/google-calendar";
+import { getForecast as getWeatherForecast } from "@productivityhub/open-meteo";
 import type {
   AppSettings,
   BookmarkItem,
@@ -46,6 +47,7 @@ import type {
   StockChartsState,
   StockItem,
   StocksState,
+  WeatherLocationsState,
   WebPagesState,
   WorkspaceState,
 } from "./types.js";
@@ -60,6 +62,7 @@ const WEBPAGES_FILE = path.join(CONFIG_DIR, "webpages.json");
 const STOCKS_FILE = path.join(CONFIG_DIR, "stocks.json");
 const STOCK_CHARTS_FILE = path.join(CONFIG_DIR, "stock-charts.json");
 const GOOGLE_TASKS_FILTERS_FILE = path.join(CONFIG_DIR, "google-tasks-filters.json");
+const WEATHER_LOCATIONS_FILE = path.join(CONFIG_DIR, "weather-locations.json");
 
 let mainWindow: BrowserWindow | null = null;
 const webPageViews = new Map<string, WebContentsView>();
@@ -188,6 +191,21 @@ function saveGoogleTasksFilters(moduleId: string, filters: string[]): void {
   all[moduleId] = filters;
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
   fs.writeFileSync(GOOGLE_TASKS_FILTERS_FILE, JSON.stringify(all, null, 2));
+}
+
+function getWeatherLocations(): WeatherLocationsState {
+  try {
+    return JSON.parse(fs.readFileSync(WEATHER_LOCATIONS_FILE, "utf-8")) as WeatherLocationsState;
+  } catch {
+    return {};
+  }
+}
+
+function saveWeatherLocation(moduleId: string, location: string): void {
+  const all = getWeatherLocations();
+  all[moduleId] = location;
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(WEATHER_LOCATIONS_FILE, JSON.stringify(all, null, 2));
 }
 
 function getWebPages(): WebPagesState {
@@ -405,6 +423,13 @@ ipcMain.handle("google-calendar:list-events", () => listUpcomingEvents());
 ipcMain.handle("google-calendar:list-events-range", (_event, timeMin: string, timeMax: string) =>
   listGoogleCalendarEventsInRange(timeMin, timeMax),
 );
+ipcMain.handle("weather:get-location", (_event, moduleId: string) =>
+  getWeatherLocations()[moduleId] ?? "",
+);
+ipcMain.handle("weather:save-location", (_event, moduleId: string, location: string) =>
+  saveWeatherLocation(moduleId, location),
+);
+ipcMain.handle("weather:get-forecast", (_event, location: string) => getWeatherForecast(location));
 ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
 ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
   const view = ensureWebPageView(moduleId);

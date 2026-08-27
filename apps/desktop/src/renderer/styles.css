@@ -213,6 +213,25 @@ body {
   color: #fff;
 }
 
+.module-card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.module-title-rename-input {
+  background: #1e1f22;
+  border: 1px solid #3f3f46;
+  border-radius: 3px;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  padding: 1px 4px;
+  min-width: 0;
+  flex: 1;
+}
+
 .module-card-body {
   padding: 12px;
   font-size: 13px;
@@ -1421,4 +1440,139 @@ body {
   font-size: 11px;
   color: #71717a;
   padding: 0 4px;
+}
+
+.weather-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weather-form {
+  display: flex;
+  gap: 6px;
+}
+
+.weather-location-input {
+  flex: 1;
+  background: #1e1f22;
+  border: 1px solid #3f3f46;
+  border-radius: 4px;
+  color: #e4e4e7;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: 12px;
+}
+
+.weather-location-input::placeholder {
+  color: #71717a;
+}
+
+.weather-form button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.weather-form button:hover {
+  background: #2a2b2e;
+}
+
+.weather-location-label {
+  margin: 0;
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.weather-location-link {
+  display: block;
+  width: fit-content;
+  text-decoration: none;
+}
+
+.weather-location-link:hover {
+  color: #e4e4e7;
+  text-decoration: underline;
+}
+
+.weather-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weather-day {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-top: 1px solid #2a2b2e;
+}
+
+.weather-day:first-child {
+  border-top: none;
+}
+
+.weather-day-label {
+  display: flex;
+  flex-direction: column;
+  width: 56px;
+  flex-shrink: 0;
+}
+
+.weather-day-name {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.weather-day-date {
+  font-size: 11px;
+  color: #71717a;
+}
+
+.weather-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.weather-phrase {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #d4d4d8;
+}
+
+.weather-precip {
+  font-size: 11px;
+  color: #7dd3fc;
+  flex-shrink: 0;
+}
+
+.weather-temps {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 56px;
+  justify-content: flex-end;
+  font-size: 12px;
+}
+
+.weather-temp-max {
+  color: #e4e4e7;
+  font-weight: 600;
+}
+
+.weather-temp-min {
+  color: #71717a;
 }

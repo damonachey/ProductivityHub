@@ -7,6 +7,7 @@ import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import type { GmailThreadSummary } from "@productivityhub/google-mail";
 import type { CreateTaskInput, GoogleTask } from "@productivityhub/google-tasks";
 import type { CalendarEvent } from "@productivityhub/google-calendar";
+import type { WeatherForecast } from "@productivityhub/open-meteo";
 import type {
   AppSettings,
   BookmarkItem,
@@ -86,6 +87,12 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("google-calendar:list-events"),
   listGoogleCalendarEventsInRange: (timeMin: string, timeMax: string): Promise<CalendarEvent[]> =>
     ipcRenderer.invoke("google-calendar:list-events-range", timeMin, timeMax),
+  getWeatherLocation: (moduleId: string): Promise<string> =>
+    ipcRenderer.invoke("weather:get-location", moduleId),
+  saveWeatherLocation: (moduleId: string, location: string): Promise<void> =>
+    ipcRenderer.invoke("weather:save-location", moduleId, location),
+  getWeatherForecast: (location: string): Promise<WeatherForecast> =>
+    ipcRenderer.invoke("weather:get-forecast", location),
   getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
   syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
     ipcRenderer.invoke("webpage:sync", moduleId, bounds),

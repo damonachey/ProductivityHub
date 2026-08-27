@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { RefreshIntervalsMinutes, Workspace } from "../types";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { MODULE_REGISTRY, getModuleDefinition } from "./modules/registry";
@@ -41,6 +41,7 @@ interface Props {
   workspace: Workspace;
   onAddModule: (type: string) => void;
   onRemoveModule: (moduleId: string) => void;
+  onRenameModule: (moduleId: string, title: string) => void;
   onReorderModule: (draggedId: string, targetId: string) => void;
   lockLayout: boolean;
   refreshIntervalsMinutes: RefreshIntervalsMinutes;
@@ -50,6 +51,7 @@ export function WorkspaceView({
   workspace,
   onAddModule,
   onRemoveModule,
+  onRenameModule,
   onReorderModule,
   lockLayout,
   refreshIntervalsMinutes,
@@ -61,6 +63,15 @@ export function WorkspaceView({
   const [removeCandidate, setRemoveCandidate] = useState<{ id: string; title: string } | null>(
     null,
   );
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
+  const [draftTitle, setDraftTitle] = useState("");
+  // Per-instance override for the card header link, set by modules whose
+  // title target depends on their own configured state (e.g. Weather
+  // linking to whatever location it's currently showing).
+  const [titleUrlOverrides, setTitleUrlOverrides] = useState<Record<string, string | null>>({});
+  const handleTitleUrlChange = useCallback((moduleId: string, url: string | null) => {
+    setTitleUrlOverrides((prev) => (prev[moduleId] === url ? prev : { ...prev, [moduleId]: url }));
+  }, []);
   const { data: githubProfileUrl } = useCachedData<string>(
     GITHUB_PROFILE_CACHE_KEY,
     refreshIntervalsMinutes.githubProfileUrl * 60_000,
@@ -71,6 +82,18 @@ export function WorkspaceView({
     definition.title.toLowerCase().includes(searchQuery.trim().toLowerCase()),
   );
 
+  function startEditingTitle(moduleId: string, currentTitle: string): void {
+    setEditingModuleId(moduleId);
+    setDraftTitle(currentTitle);
+  }
+
+  function commitTitle(): void {
+    if (editingModuleId) {
+      onRenameModule(editingModuleId, draftTitle.trim());
+    }
+    setEditingModuleId(null);
+  }
+
   return (
     <div className="workspace-view">
       <div className="module-grid">
@@ -78,7 +101,10 @@ export function WorkspaceView({
           const definition = getModuleDefinition(moduleInstance.type);
           if (!definition) return null;
           const { Component } = definition;
-          const titleUrl = getTitleUrl(moduleInstance.type, githubProfileUrl);
+          const displayTitle = moduleInstance.title || definition.title;
+          const titleUrl =
+            titleUrlOverrides[moduleInstance.id] ?? getTitleUrl(moduleInstance.type, githubProfileUrl);
+          const isEditingTitle = editingModuleId === moduleInstance.id;
 
           return (
             <div
@@ -114,29 +140,52 @@ export function WorkspaceView({
                   setDragOverModuleId(null);
                 }}
               >
-                {titleUrl ? (
+                {isEditingTitle ? (
+                  <input
+                    className="module-title-rename-input"
+                    autoFocus
+                    value={draftTitle}
+                    onChange={(event) => setDraftTitle(event.target.value)}
+                    onClick={(event) => event.stopPropagation()}
+                    onFocus={(event) => event.target.select()}
+                    onBlur={commitTitle}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") commitTitle();
+                      if (event.key === "Escape") setEditingModuleId(null);
+                    }}
+                  />
+                ) : titleUrl ? (
                   <a href={titleUrl} target="_blank" rel="noreferrer" draggable={false}>
-                    {definition.title}
+                    {displayTitle}
                   </a>
                 ) : (
-                  <span>{definition.title}</span>
+                  <span>{displayTitle}</span>
                 )}
-                {!lockLayout && (
-                  <button
-                    aria-label={`Remove ${definition.title}`}
-                    onClick={() =>
-                      setRemoveCandidate({ id: moduleInstance.id, title: definition.title })
-                    }
-                  >
-                    ×
-                  </button>
-                )}
+                <div className="module-card-header-actions">
+                  {!lockLayout && (
+                    <button
+                      aria-label={`Rename ${displayTitle}`}
+                      onClick={() => startEditingTitle(moduleInstance.id, displayTitle)}
+                    >
+                      ✎
+                    </button>
+                  )}
+                  {!lockLayout && (
+                    <button
+                      aria-label={`Remove ${displayTitle}`}
+                      onClick={() => setRemoveCandidate({ id: moduleInstance.id, title: displayTitle })}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="module-card-body">
                 <Component
                   moduleId={moduleInstance.id}
                   lockLayout={lockLayout}
                   refreshIntervalsMinutes={refreshIntervalsMinutes}
+                  onTitleUrlChange={(url) => handleTitleUrlChange(moduleInstance.id, url)}
                 />
               </div>
             </div>

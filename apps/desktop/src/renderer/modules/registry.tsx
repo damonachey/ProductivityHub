@@ -13,6 +13,7 @@ import { GmailInboxModule } from "./GmailInboxModule";
 import { GoogleTasksModule } from "./GoogleTasksModule";
 import { GoogleCalendarListModule } from "./GoogleCalendarListModule";
 import { GoogleCalendarGridModule } from "./GoogleCalendarGridModule";
+import { WeatherModule } from "./WeatherModule";
 import type { ModuleProps } from "./types";
 
 export interface ModuleDefinition {
@@ -48,6 +49,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
     title: "Google Calendar",
     Component: GoogleCalendarGridModule,
   },
+  { type: "weather", title: "Weather", Component: WeatherModule },
 ];
 
 export const MODULE_REGISTRY: ModuleDefinition[] = [...MODULE_DEFINITIONS].sort((a, b) =>
