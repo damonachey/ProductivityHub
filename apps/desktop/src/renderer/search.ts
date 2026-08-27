@@ -24,6 +24,14 @@ export function googleCalendarGridCacheKey(moduleId: string): string {
   return `search-google-calendar-grid-${moduleId}`;
 }
 
+// RSS has per-module config (feed URLs), so unlike Slashdot/HackerNews/
+// FreshRSS its fetched items aren't shared across instances - each module
+// instance writes its own fetch into the cache under its own key, same as
+// Gmail/Tasks/Calendar above.
+export function rssCacheKey(moduleId: string): string {
+  return `search-rss-${moduleId}`;
+}
+
 // Slashdot/HackerNews/FreshRSS have no per-module config, so every instance
 // of a given type shares one cache entry - these are the same literal keys
 // each module's useCachedData call already caches its result under.
@@ -79,6 +87,12 @@ interface HackerNewsCacheEntry {
 }
 
 interface FreshRssCacheEntry {
+  id: string;
+  title: string;
+  feedTitle: string;
+}
+
+interface RssCacheEntry {
   id: string;
   title: string;
   feedTitle: string;
@@ -284,6 +298,22 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
 
       if (module.type === "freshrss") {
         const feedItems = getCached<FreshRssCacheEntry[]>(FRESHRSS_CACHE_KEY) ?? [];
+        for (const feedItem of feedItems) {
+          items.push({
+            workspaceId: workspace.id,
+            workspaceName: workspace.name,
+            moduleId: module.id,
+            itemId: feedItem.id,
+            moduleTitle,
+            category: "Article",
+            snippet: feedItem.title,
+            haystack: `${feedItem.title} ${feedItem.feedTitle}`,
+          });
+        }
+      }
+
+      if (module.type === "rss") {
+        const feedItems = getCached<RssCacheEntry[]>(rssCacheKey(module.id)) ?? [];
         for (const feedItem of feedItems) {
           items.push({
             workspaceId: workspace.id,

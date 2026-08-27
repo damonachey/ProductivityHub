@@ -63,6 +63,9 @@ importers:
       '@productivityhub/open-meteo':
         specifier: workspace:*
         version: link:../../packages/services/open-meteo
+      '@productivityhub/rss':
+        specifier: workspace:*
+        version: link:../../packages/services/rss
       '@productivityhub/slashdot':
         specifier: workspace:*
         version: link:../../packages/services/slashdot
@@ -167,6 +170,16 @@ importers:
         version: 26.3.0
 
   packages/services/open-meteo:
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
+
+  packages/services/rss:
+    dependencies:
+      rss-parser:
+        specifier: ^3.13.0
+        version: 3.13.0
     devDependencies:
       '@types/node':
         specifier: ^26.3.0

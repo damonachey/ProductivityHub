@@ -9,6 +9,7 @@ import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityh
 import { getHeadlines } from "@productivityhub/slashdot";
 import { getTopStories } from "@productivityhub/hackernews";
 import { getUnreadItems } from "@productivityhub/freshrss";
+import { getFeedItems } from "@productivityhub/rss";
 import { getDailyCandles, getQuotes } from "@productivityhub/yahoo-finance";
 import {
   archiveThread,
@@ -45,6 +46,8 @@ import type {
   GoogleTasksFiltersState,
   NotesState,
   Rect,
+  RssModuleSettings,
+  RssState,
   StockChartsState,
   StockItem,
   StocksState,
@@ -64,6 +67,9 @@ const STOCKS_FILE = path.join(CONFIG_DIR, "stocks.json");
 const STOCK_CHARTS_FILE = path.join(CONFIG_DIR, "stock-charts.json");
 const GOOGLE_TASKS_FILTERS_FILE = path.join(CONFIG_DIR, "google-tasks-filters.json");
 const WEATHER_LOCATIONS_FILE = path.join(CONFIG_DIR, "weather-locations.json");
+const RSS_FILE = path.join(CONFIG_DIR, "rss.json");
+
+const DEFAULT_RSS_SETTINGS: RssModuleSettings = { feeds: [], maxItems: 30, maxAgeDays: 14 };
 
 let mainWindow: BrowserWindow | null = null;
 const webPageViews = new Map<string, WebContentsView>();
@@ -300,6 +306,25 @@ function saveWeatherLocation(moduleId: string, location: string): void {
   fs.writeFileSync(WEATHER_LOCATIONS_FILE, JSON.stringify(all, null, 2));
 }
 
+function getRssState(): RssState {
+  try {
+    return JSON.parse(fs.readFileSync(RSS_FILE, "utf-8")) as RssState;
+  } catch {
+    return {};
+  }
+}
+
+function getRssSettings(moduleId: string): RssModuleSettings {
+  return getRssState()[moduleId] ?? DEFAULT_RSS_SETTINGS;
+}
+
+function saveRssSettings(moduleId: string, settings: RssModuleSettings): void {
+  const all = getRssState();
+  all[moduleId] = settings;
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(RSS_FILE, JSON.stringify(all, null, 2));
+}
+
 function getWebPages(): WebPagesState {
   try {
     return JSON.parse(fs.readFileSync(WEBPAGES_FILE, "utf-8")) as WebPagesState;
@@ -524,6 +549,17 @@ ipcMain.handle("weather:save-location", (_event, moduleId: string, location: str
   saveWeatherLocation(moduleId, location),
 );
 ipcMain.handle("weather:get-forecast", (_event, location: string) => getWeatherForecast(location));
+ipcMain.handle("rss:get-settings", (_event, moduleId: string) => getRssSettings(moduleId));
+ipcMain.handle("rss:save-settings", (_event, moduleId: string, settings: RssModuleSettings) =>
+  saveRssSettings(moduleId, settings),
+);
+ipcMain.handle("rss:get-items", (_event, moduleId: string) => {
+  const settings = getRssSettings(moduleId);
+  return getFeedItems(
+    settings.feeds.map((feed) => ({ id: feed.id, url: feed.url, title: feed.title })),
+    { maxItems: settings.maxItems, maxAgeDays: settings.maxAgeDays },
+  );
+});
 ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
 ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
   const view = ensureWebPageView(moduleId);

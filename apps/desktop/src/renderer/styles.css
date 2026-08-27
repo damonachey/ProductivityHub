@@ -651,6 +651,155 @@ body {
   color: #fff;
 }
 
+.rss-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rss-feed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rss-feed-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  border-radius: 4px;
+}
+
+.rss-feed-item.dragging {
+  opacity: 0.4;
+}
+
+.rss-feed-item.drag-over {
+  box-shadow: inset 0 2px 0 #6366f1;
+}
+
+.rss-feed-drag-handle {
+  color: #52525b;
+  cursor: grab;
+  font-size: 12px;
+}
+
+.rss-feed-label {
+  flex: 1;
+  color: #e4e4e7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rss-feed-actions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+}
+
+.rss-feed-item:hover .rss-feed-actions,
+.rss-feed-item:focus-within .rss-feed-actions {
+  opacity: 1;
+}
+
+.rss-feed-actions button {
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+
+.rss-feed-actions button:hover {
+  color: #fff;
+}
+
+.rss-feed-edit-form,
+.rss-feed-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 0;
+}
+
+.rss-input {
+  background: #1e1f22;
+  border: 1px solid #3f3f46;
+  border-radius: 4px;
+  color: #e4e4e7;
+  padding: 5px 8px;
+  font: inherit;
+}
+
+.rss-input::placeholder {
+  color: #71717a;
+}
+
+.rss-feed-edit-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.rss-feed-edit-actions button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.rss-feed-edit-actions button:hover {
+  background: #2a2b2e;
+}
+
+.rss-feed-add-button {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 4px 2px;
+}
+
+.rss-feed-add-button:hover {
+  color: #fff;
+}
+
+.rss-options-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: #a1a1aa;
+  font-size: 12px;
+}
+
+.rss-options-form label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rss-options-input {
+  width: 56px;
+  background: #1e1f22;
+  border: 1px solid #3f3f46;
+  border-radius: 4px;
+  color: #e4e4e7;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 12px;
+}
+
 .module-card:has(.webpage-module) {
   max-width: 640px;
   flex-basis: 480px;

@@ -32,6 +32,7 @@ export interface RefreshIntervalsMinutes {
   googleCalendarList: number;
   googleCalendarGrid: number;
   weather: number;
+  rss: number;
 }
 
 // Shared with the renderer so a settings.json missing some (or all) of
@@ -51,6 +52,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   googleCalendarList: 5,
   googleCalendarGrid: 5,
   weather: 15,
+  rss: 15,
 };
 
 export interface AppSettings {
@@ -105,3 +107,19 @@ export type GoogleTasksFiltersState = Record<string, string[]>;
 // Keyed by module instance id: the configured location (zip, "City, State",
 // or PWS station id) for a Weather module instance.
 export type WeatherLocationsState = Record<string, string>;
+
+export interface RssFeedConfig {
+  id: string;
+  url: string;
+  title?: string;
+}
+
+export interface RssModuleSettings {
+  feeds: RssFeedConfig[];
+  maxItems: number;
+  maxAgeDays: number;
+}
+
+// Keyed by module instance id, so each RSS module instance keeps its own
+// independent feed list and item limits.
+export type RssState = Record<string, RssModuleSettings>;

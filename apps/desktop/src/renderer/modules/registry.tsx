@@ -7,6 +7,7 @@ import { WebPageModule } from "./WebPageModule";
 import { SlashdotModule } from "./SlashdotModule";
 import { HackerNewsModule } from "./HackerNewsModule";
 import { FreshRssModule } from "./FreshRssModule";
+import { RssModule } from "./RssModule";
 import { StockQuotesModule } from "./StockQuotesModule";
 import { StockChartModule } from "./StockChartModule";
 import { GmailInboxModule } from "./GmailInboxModule";
@@ -35,6 +36,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
   { type: "slashdot", title: "Slashdot", Component: SlashdotModule },
   { type: "hackernews", title: "Hacker News", Component: HackerNewsModule },
   { type: "freshrss", title: "FreshRSS", Component: FreshRssModule },
+  { type: "rss", title: "RSS", Component: RssModule },
   { type: "stock-quotes", title: "Stock Quotes", Component: StockQuotesModule },
   { type: "stock-chart", title: "Stock Chart", Component: StockChartModule },
   { type: "gmail-inbox", title: "Gmail Inbox", Component: GmailInboxModule },

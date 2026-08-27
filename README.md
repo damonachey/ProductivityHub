@@ -1,6 +1,6 @@
 # ProductivityHub
 
-Electron desktop app and `ph` CLI for productivity tools: GitHub, Gmail, Google Tasks, Google Calendar (list and month-grid views), Weather, FreshRSS, Slashdot, Hacker News, and stock quotes/charts, plus simple utility modules (Bookmarks, Notes, embedded Web Page). All are wired to real data in the desktop app.
+Electron desktop app and `ph` CLI for productivity tools: GitHub, Gmail, Google Tasks, Google Calendar (list and month-grid views), Weather, FreshRSS, RSS/Atom (arbitrary feed URLs), Slashdot, Hacker News, and stock quotes/charts, plus simple utility modules (Bookmarks, Notes, embedded Web Page). All are wired to real data in the desktop app.
 
 ## Usage
 
@@ -58,6 +58,7 @@ packages/
     open-meteo/       Weather forecast + geocoding (Open-Meteo, free/keyless)
     yahoo-finance/    Stock quotes/candles
     freshrss/         FreshRSS unread items
+    rss/              Generic RSS/Atom feed fetching + parsing (arbitrary feed URLs)
     slashdot/         Slashdot headlines
     hackernews/       Hacker News top stories
 ```

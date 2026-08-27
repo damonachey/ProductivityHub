@@ -8,12 +8,14 @@ import type { GmailThreadSummary } from "@productivityhub/google-mail";
 import type { CreateTaskInput, GoogleTask } from "@productivityhub/google-tasks";
 import type { CalendarEvent } from "@productivityhub/google-calendar";
 import type { WeatherForecast } from "@productivityhub/open-meteo";
+import type { RssFetchResult } from "@productivityhub/rss";
 import type {
   AppSettings,
   BookmarkItem,
   BookmarksState,
   NotesState,
   Rect,
+  RssModuleSettings,
   StockChartsState,
   StockItem,
   StocksState,
@@ -98,6 +100,12 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("weather:save-location", moduleId, location),
   getWeatherForecast: (location: string): Promise<WeatherForecast> =>
     ipcRenderer.invoke("weather:get-forecast", location),
+  getRssSettings: (moduleId: string): Promise<RssModuleSettings> =>
+    ipcRenderer.invoke("rss:get-settings", moduleId),
+  saveRssSettings: (moduleId: string, settings: RssModuleSettings): Promise<void> =>
+    ipcRenderer.invoke("rss:save-settings", moduleId, settings),
+  getRssItems: (moduleId: string): Promise<RssFetchResult> =>
+    ipcRenderer.invoke("rss:get-items", moduleId),
   getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
   syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
     ipcRenderer.invoke("webpage:sync", moduleId, bounds),

@@ -7,12 +7,14 @@ import type { GmailThreadSummary } from "@productivityhub/google-mail";
 import type { CreateTaskInput, GoogleTask } from "@productivityhub/google-tasks";
 import type { CalendarEvent } from "@productivityhub/google-calendar";
 import type { WeatherForecast } from "@productivityhub/open-meteo";
+import type { RssFetchResult } from "@productivityhub/rss";
 import type {
   AppSettings,
   BookmarkItem,
   BookmarksState,
   NotesState,
   Rect,
+  RssModuleSettings,
   StockChartsState,
   StockItem,
   StocksState,
@@ -70,6 +72,9 @@ declare global {
       getAllWeatherLocations: () => Promise<WeatherLocationsState>;
       saveWeatherLocation: (moduleId: string, location: string) => Promise<void>;
       getWeatherForecast: (location: string) => Promise<WeatherForecast>;
+      getRssSettings: (moduleId: string) => Promise<RssModuleSettings>;
+      saveRssSettings: (moduleId: string, settings: RssModuleSettings) => Promise<void>;
+      getRssItems: (moduleId: string) => Promise<RssFetchResult>;
       getWebPageUrl: (moduleId: string) => Promise<string>;
       syncWebPage: (moduleId: string, bounds: Rect) => Promise<void>;
       hideWebPage: (moduleId: string) => Promise<void>;

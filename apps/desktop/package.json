@@ -21,6 +21,7 @@
     "@productivityhub/google-tasks": "workspace:*",
     "@productivityhub/hackernews": "workspace:*",
     "@productivityhub/open-meteo": "workspace:*",
+    "@productivityhub/rss": "workspace:*",
     "@productivityhub/slashdot": "workspace:*",
     "@productivityhub/yahoo-finance": "workspace:*",
     "electron-window-state": "^5.0.3",
