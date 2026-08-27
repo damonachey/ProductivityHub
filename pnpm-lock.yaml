@@ -54,6 +54,9 @@ importers:
       '@productivityhub/slashdot':
         specifier: workspace:*
         version: link:../../packages/services/slashdot
+      '@productivityhub/yahoo-finance':
+        specifier: workspace:*
+        version: link:../../packages/services/yahoo-finance
       electron-window-state:
         specifier: ^5.0.3
         version: 5.0.3
@@ -156,6 +159,12 @@ importers:
       rss-parser:
         specifier: ^3.13.0
         version: 3.13.0
+    devDependencies:
+      '@types/node':
+        specifier: ^26.3.0
+        version: 26.3.0
+
+  packages/services/yahoo-finance:
     devDependencies:
       '@types/node':
         specifier: ^26.3.0

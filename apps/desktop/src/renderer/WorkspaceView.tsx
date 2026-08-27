@@ -22,6 +22,9 @@ function getTitleUrl(type: string, githubProfileUrl: string | null): string | un
   if (type === "freshrss") {
     return "http://192.168.0.9/FreshRSS/";
   }
+  if (type === "stock-quotes") {
+    return "https://finance.yahoo.com";
+  }
   return undefined;
 }
 

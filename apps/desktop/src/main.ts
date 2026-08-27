@@ -8,12 +8,15 @@ import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityh
 import { getHeadlines } from "@productivityhub/slashdot";
 import { getTopStories } from "@productivityhub/hackernews";
 import { getUnreadItems } from "@productivityhub/freshrss";
+import { getQuotes } from "@productivityhub/yahoo-finance";
 import type {
   AppSettings,
   BookmarkItem,
   BookmarksState,
   NotesState,
   Rect,
+  StockItem,
+  StocksState,
   WebPagesState,
   WorkspaceState,
 } from "./types.js";
@@ -24,6 +27,7 @@ const SETTINGS_FILE = path.join(CONFIG_DIR, "settings.json");
 const NOTES_FILE = path.join(CONFIG_DIR, "notes.json");
 const BOOKMARKS_FILE = path.join(CONFIG_DIR, "bookmarks.json");
 const WEBPAGES_FILE = path.join(CONFIG_DIR, "webpages.json");
+const STOCKS_FILE = path.join(CONFIG_DIR, "stocks.json");
 
 let mainWindow: BrowserWindow | null = null;
 const webPageViews = new Map<string, WebContentsView>();
@@ -98,6 +102,21 @@ function saveBookmarks(moduleId: string, items: BookmarkItem[]): void {
   bookmarks[moduleId] = items;
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
   fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(bookmarks, null, 2));
+}
+
+function getStocks(): StocksState {
+  try {
+    return JSON.parse(fs.readFileSync(STOCKS_FILE, "utf-8")) as StocksState;
+  } catch {
+    return {};
+  }
+}
+
+function saveStocks(moduleId: string, items: StockItem[]): void {
+  const stocks = getStocks();
+  stocks[moduleId] = items;
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(STOCKS_FILE, JSON.stringify(stocks, null, 2));
 }
 
 function getWebPages(): WebPagesState {
@@ -244,6 +263,11 @@ ipcMain.handle("bookmarks:get", () => getBookmarks());
 ipcMain.handle("bookmarks:save", (_event, moduleId: string, items: BookmarkItem[]) =>
   saveBookmarks(moduleId, items),
 );
+ipcMain.handle("stocks:get", () => getStocks());
+ipcMain.handle("stocks:save", (_event, moduleId: string, items: StockItem[]) =>
+  saveStocks(moduleId, items),
+);
+ipcMain.handle("stocks:get-quotes", (_event, symbols: string[]) => getQuotes(symbols));
 ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
 ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
   const view = ensureWebPageView(moduleId);

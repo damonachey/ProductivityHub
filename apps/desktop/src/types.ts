@@ -43,3 +43,12 @@ export interface Rect {
 // Keyed by module instance id: the last-navigated URL, so a Web Page module
 // resumes where it left off across app restarts.
 export type WebPagesState = Record<string, string>;
+
+export interface StockItem {
+  id: string;
+  symbol: string;
+}
+
+// Keyed by module instance id, so each Stock Quotes module instance keeps
+// its own independent, ordered watchlist.
+export type StocksState = Record<string, StockItem[]>;

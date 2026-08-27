@@ -3,12 +3,15 @@ import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
+import type { StockQuote } from "@productivityhub/yahoo-finance";
 import type {
   AppSettings,
   BookmarkItem,
   BookmarksState,
   NotesState,
   Rect,
+  StockItem,
+  StocksState,
   WorkspaceState,
 } from "./types.js";
 
@@ -34,6 +37,11 @@ contextBridge.exposeInMainWorld("api", {
   getBookmarks: (): Promise<BookmarksState> => ipcRenderer.invoke("bookmarks:get"),
   saveBookmarks: (moduleId: string, items: BookmarkItem[]): Promise<void> =>
     ipcRenderer.invoke("bookmarks:save", moduleId, items),
+  getStocks: (): Promise<StocksState> => ipcRenderer.invoke("stocks:get"),
+  saveStocks: (moduleId: string, items: StockItem[]): Promise<void> =>
+    ipcRenderer.invoke("stocks:save", moduleId, items),
+  getStockQuotes: (symbols: string[]): Promise<StockQuote[]> =>
+    ipcRenderer.invoke("stocks:get-quotes", symbols),
   getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
   syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
     ipcRenderer.invoke("webpage:sync", moduleId, bounds),
