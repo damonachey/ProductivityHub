@@ -24,6 +24,13 @@ export function googleCalendarGridCacheKey(moduleId: string): string {
   return `search-google-calendar-grid-${moduleId}`;
 }
 
+// Slashdot/HackerNews/FreshRSS have no per-module config, so every instance
+// of a given type shares one cache entry - these are the same literal keys
+// each module's useCachedData call already caches its result under.
+export const SLASHDOT_CACHE_KEY = "slashdot-headlines";
+export const HACKERNEWS_CACHE_KEY = "hackernews-stories";
+export const FRESHRSS_CACHE_KEY = "freshrss-unread";
+
 export interface SearchItem {
   workspaceId: string;
   workspaceName: string;
@@ -48,6 +55,21 @@ interface TaskCacheEntry {
 interface EventCacheEntry {
   title: string;
   location: string | null;
+}
+
+interface SlashdotCacheEntry {
+  title: string;
+  creator: string | null;
+}
+
+interface HackerNewsCacheEntry {
+  title: string;
+  author: string;
+}
+
+interface FreshRssCacheEntry {
+  title: string;
+  feedTitle: string;
 }
 
 function moduleDisplayTitle(type: string, title: string | undefined): string {
@@ -203,6 +225,51 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             category: "Event",
             snippet: event.title,
             haystack: `${event.title} ${event.location ?? ""}`,
+          });
+        }
+      }
+
+      if (module.type === "slashdot") {
+        const headlines = getCached<SlashdotCacheEntry[]>(SLASHDOT_CACHE_KEY) ?? [];
+        for (const headline of headlines) {
+          items.push({
+            workspaceId: workspace.id,
+            workspaceName: workspace.name,
+            moduleId: module.id,
+            moduleTitle,
+            category: "Headline",
+            snippet: headline.title,
+            haystack: `${headline.title} ${headline.creator ?? ""}`,
+          });
+        }
+      }
+
+      if (module.type === "hackernews") {
+        const stories = getCached<HackerNewsCacheEntry[]>(HACKERNEWS_CACHE_KEY) ?? [];
+        for (const story of stories) {
+          items.push({
+            workspaceId: workspace.id,
+            workspaceName: workspace.name,
+            moduleId: module.id,
+            moduleTitle,
+            category: "Story",
+            snippet: story.title,
+            haystack: `${story.title} ${story.author}`,
+          });
+        }
+      }
+
+      if (module.type === "freshrss") {
+        const feedItems = getCached<FreshRssCacheEntry[]>(FRESHRSS_CACHE_KEY) ?? [];
+        for (const feedItem of feedItems) {
+          items.push({
+            workspaceId: workspace.id,
+            workspaceName: workspace.name,
+            moduleId: module.id,
+            moduleTitle,
+            category: "Article",
+            snippet: feedItem.title,
+            haystack: `${feedItem.title} ${feedItem.feedTitle}`,
           });
         }
       }

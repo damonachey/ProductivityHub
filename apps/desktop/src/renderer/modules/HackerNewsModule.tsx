@@ -1,8 +1,7 @@
 import type { HackerNewsStory } from "@productivityhub/hackernews";
+import { HACKERNEWS_CACHE_KEY } from "../search";
 import { useCachedData } from "../useCachedData";
 import type { ModuleProps } from "./types";
-
-const CACHE_KEY = "hackernews-stories";
 
 function formatAge(unixSeconds: number): string {
   if (!unixSeconds) return "unknown";
@@ -15,7 +14,7 @@ function formatAge(unixSeconds: number): string {
 
 export function HackerNewsModule({ refreshIntervalsMinutes }: ModuleProps) {
   const { data: stories, error } = useCachedData<HackerNewsStory[]>(
-    CACHE_KEY,
+    HACKERNEWS_CACHE_KEY,
     refreshIntervalsMinutes.hackernews * 60_000,
     () => window.api.getHackerNewsStories(),
   );

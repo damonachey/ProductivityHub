@@ -1,8 +1,7 @@
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
+import { SLASHDOT_CACHE_KEY } from "../search";
 import { useCachedData } from "../useCachedData";
 import type { ModuleProps } from "./types";
-
-const CACHE_KEY = "slashdot-headlines";
 
 function formatDate(pubDate: string | null): string {
   if (!pubDate) return "unknown";
@@ -17,7 +16,7 @@ function formatDate(pubDate: string | null): string {
 
 export function SlashdotModule({ refreshIntervalsMinutes }: ModuleProps) {
   const { data: headlines, error } = useCachedData<SlashdotHeadline[]>(
-    CACHE_KEY,
+    SLASHDOT_CACHE_KEY,
     refreshIntervalsMinutes.slashdot * 60_000,
     () => window.api.getSlashdotHeadlines(),
   );
