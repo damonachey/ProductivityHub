@@ -4,6 +4,7 @@ import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
 import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
+import type { GmailThreadSummary } from "@productivityhub/google-mail";
 import type {
   AppSettings,
   BookmarkItem,
@@ -48,6 +49,17 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("stock-chart:save-symbol", moduleId, symbol),
   getStockCandles: (symbol: string): Promise<Candle[]> =>
     ipcRenderer.invoke("stock-chart:get-candles", symbol),
+  isGmailAuthenticated: (): Promise<boolean> => ipcRenderer.invoke("gmail:is-authenticated"),
+  authenticateGmail: (): Promise<void> => ipcRenderer.invoke("gmail:authenticate"),
+  disconnectGmail: (): Promise<void> => ipcRenderer.invoke("gmail:disconnect"),
+  listGmailThreads: (): Promise<GmailThreadSummary[]> => ipcRenderer.invoke("gmail:list-threads"),
+  markGmailThreadRead: (threadId: string): Promise<void> =>
+    ipcRenderer.invoke("gmail:mark-read", threadId),
+  markGmailThreadUnread: (threadId: string): Promise<void> =>
+    ipcRenderer.invoke("gmail:mark-unread", threadId),
+  archiveGmailThread: (threadId: string): Promise<void> =>
+    ipcRenderer.invoke("gmail:archive", threadId),
+  trashGmailThread: (threadId: string): Promise<void> => ipcRenderer.invoke("gmail:trash", threadId),
   getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
   syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
     ipcRenderer.invoke("webpage:sync", moduleId, bounds),

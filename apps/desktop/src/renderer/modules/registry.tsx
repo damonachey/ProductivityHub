@@ -9,6 +9,7 @@ import { HackerNewsModule } from "./HackerNewsModule";
 import { FreshRssModule } from "./FreshRssModule";
 import { StockQuotesModule } from "./StockQuotesModule";
 import { StockChartModule } from "./StockChartModule";
+import { GmailInboxModule } from "./GmailInboxModule";
 import { PlaceholderModule } from "./PlaceholderModule";
 import type { ModuleProps } from "./types";
 
@@ -33,11 +34,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
   { type: "freshrss", title: "FreshRSS", Component: FreshRssModule },
   { type: "stock-quotes", title: "Stock Quotes", Component: StockQuotesModule },
   { type: "stock-chart", title: "Stock Chart", Component: StockChartModule },
-  {
-    type: "gmail-inbox",
-    title: "Gmail Inbox",
-    Component: () => <PlaceholderModule title="Gmail Inbox" />,
-  },
+  { type: "gmail-inbox", title: "Gmail Inbox", Component: GmailInboxModule },
   {
     type: "google-tasks",
     title: "Google Tasks",

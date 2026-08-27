@@ -24,6 +24,9 @@ function getTitleUrl(type: string, githubProfileUrl: string | null): string | un
   if (type === "stock-quotes") {
     return "https://finance.yahoo.com";
   }
+  if (type === "gmail-inbox") {
+    return "https://mail.google.com/mail/u/0/#inbox";
+  }
   return undefined;
 }
 

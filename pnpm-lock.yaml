@@ -48,6 +48,9 @@ importers:
       '@productivityhub/github':
         specifier: workspace:*
         version: link:../../packages/services/github
+      '@productivityhub/google-mail':
+        specifier: workspace:*
+        version: link:../../packages/services/google-mail
       '@productivityhub/hackernews':
         specifier: workspace:*
         version: link:../../packages/services/hackernews

@@ -3,6 +3,7 @@ import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
 import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
+import type { GmailThreadSummary } from "@productivityhub/google-mail";
 import type {
   AppSettings,
   BookmarkItem,
@@ -37,6 +38,14 @@ declare global {
       getStockChartSymbol: (moduleId: string) => Promise<string>;
       saveStockChartSymbol: (moduleId: string, symbol: string) => Promise<void>;
       getStockCandles: (symbol: string) => Promise<Candle[]>;
+      isGmailAuthenticated: () => Promise<boolean>;
+      authenticateGmail: () => Promise<void>;
+      disconnectGmail: () => Promise<void>;
+      listGmailThreads: () => Promise<GmailThreadSummary[]>;
+      markGmailThreadRead: (threadId: string) => Promise<void>;
+      markGmailThreadUnread: (threadId: string) => Promise<void>;
+      archiveGmailThread: (threadId: string) => Promise<void>;
+      trashGmailThread: (threadId: string) => Promise<void>;
       getWebPageUrl: (moduleId: string) => Promise<string>;
       syncWebPage: (moduleId: string, bounds: Rect) => Promise<void>;
       hideWebPage: (moduleId: string) => Promise<void>;

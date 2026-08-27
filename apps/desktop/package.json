@@ -16,6 +16,7 @@
     "@productivityhub/core": "workspace:*",
     "@productivityhub/freshrss": "workspace:*",
     "@productivityhub/github": "workspace:*",
+    "@productivityhub/google-mail": "workspace:*",
     "@productivityhub/hackernews": "workspace:*",
     "@productivityhub/slashdot": "workspace:*",
     "@productivityhub/yahoo-finance": "workspace:*",

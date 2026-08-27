@@ -23,6 +23,7 @@ export interface RefreshIntervalsMinutes {
   freshrss: number;
   stockQuotes: number;
   stockChart: number;
+  gmailInbox: number;
 }
 
 // Shared with the renderer so a settings.json missing some (or all) of
@@ -37,6 +38,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   freshrss: 5,
   stockQuotes: 5,
   stockChart: 15,
+  gmailInbox: 2,
 };
 
 export interface AppSettings {

@@ -9,6 +9,16 @@ import { getHeadlines } from "@productivityhub/slashdot";
 import { getTopStories } from "@productivityhub/hackernews";
 import { getUnreadItems } from "@productivityhub/freshrss";
 import { getDailyCandles, getQuotes } from "@productivityhub/yahoo-finance";
+import {
+  archiveThread,
+  authenticate as authenticateGmail,
+  disconnect as disconnectGmail,
+  isAuthenticated as isGmailAuthenticated,
+  listInboxThreads,
+  markThreadRead,
+  markThreadUnread,
+  trashThread,
+} from "@productivityhub/google-mail";
 import type {
   AppSettings,
   BookmarkItem,
@@ -300,6 +310,14 @@ ipcMain.handle("stock-chart:save-symbol", (_event, moduleId: string, symbol: str
   saveStockChartSymbol(moduleId, symbol),
 );
 ipcMain.handle("stock-chart:get-candles", (_event, symbol: string) => getDailyCandles(symbol));
+ipcMain.handle("gmail:is-authenticated", () => isGmailAuthenticated());
+ipcMain.handle("gmail:authenticate", () => authenticateGmail((authUrl) => shell.openExternal(authUrl)));
+ipcMain.handle("gmail:disconnect", () => disconnectGmail());
+ipcMain.handle("gmail:list-threads", () => listInboxThreads());
+ipcMain.handle("gmail:mark-read", (_event, threadId: string) => markThreadRead(threadId));
+ipcMain.handle("gmail:mark-unread", (_event, threadId: string) => markThreadUnread(threadId));
+ipcMain.handle("gmail:archive", (_event, threadId: string) => archiveThread(threadId));
+ipcMain.handle("gmail:trash", (_event, threadId: string) => trashThread(threadId));
 ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
 ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
   const view = ensureWebPageView(moduleId);

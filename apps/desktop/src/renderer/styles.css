@@ -763,3 +763,149 @@ body {
   width: 100%;
   height: 220px;
 }
+
+.gmail-connect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.gmail-connect button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.gmail-connect button:hover:not(:disabled) {
+  background: #2a2b2e;
+}
+
+.gmail-connect button:disabled {
+  color: #71717a;
+  cursor: default;
+}
+
+.gmail-thread-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.gmail-thread-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gmail-thread-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.gmail-thread-link {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+}
+
+.gmail-thread-from-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  color: #71717a;
+  font-size: 12px;
+}
+
+.gmail-from {
+  color: #a1a1aa;
+  font-weight: 400;
+}
+
+.gmail-subject {
+  color: #a1a1aa;
+}
+
+.gmail-thread-link:hover .gmail-subject {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.gmail-thread-link:hover .gmail-from {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.gmail-thread-link:hover .gmail-thread-from-meta {
+  color: #d4d4d8;
+  text-decoration: underline;
+}
+
+.gmail-thread-item.gmail-unread .gmail-from {
+  color: #fff;
+  font-weight: 600;
+}
+
+.gmail-thread-item.gmail-unread .gmail-subject {
+  color: #fff;
+  font-weight: 600;
+}
+
+.gmail-snippet {
+  margin: 2px 0 0;
+  color: #71717a;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gmail-thread-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.gmail-thread-item:hover .gmail-thread-actions,
+.gmail-thread-item:focus-within .gmail-thread-actions {
+  opacity: 1;
+}
+
+.gmail-thread-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #a1a1aa;
+  border-radius: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  cursor: pointer;
+}
+
+.gmail-thread-actions button:hover:not(:disabled) {
+  background: #2a2b2e;
+  color: #fff;
+}
+
+.gmail-thread-actions button:disabled {
+  color: #52525b;
+  cursor: default;
+}
