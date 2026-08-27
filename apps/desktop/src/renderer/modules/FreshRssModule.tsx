@@ -36,7 +36,7 @@ export function FreshRssModule({ refreshIntervalsMinutes }: ModuleProps) {
   return (
     <ul className="repo-list">
       {items.map((item) => (
-        <li key={item.id} className="repo-item">
+        <li key={item.id} data-search-item-id={item.id} className="repo-item">
           <a className="repo-name" href={item.link} target="_blank" rel="noreferrer">
             {item.title}
           </a>

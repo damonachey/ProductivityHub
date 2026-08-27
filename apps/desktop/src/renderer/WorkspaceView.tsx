@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefreshIntervalsMinutes, Workspace } from "../types";
 import { getCached, setCached } from "./cache";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -45,6 +45,7 @@ interface Props {
   onReorderModule: (draggedId: string, targetId: string) => void;
   lockLayout: boolean;
   refreshIntervalsMinutes: RefreshIntervalsMinutes;
+  highlightedModule: { moduleId: string; itemId: string | null; token: number } | null;
 }
 
 export function WorkspaceView({
@@ -55,6 +56,7 @@ export function WorkspaceView({
   onReorderModule,
   lockLayout,
   refreshIntervalsMinutes,
+  highlightedModule,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,6 +74,37 @@ export function WorkspaceView({
   const handleTitleUrlChange = useCallback((moduleId: string, url: string | null) => {
     setTitleUrlOverrides((prev) => (prev[moduleId] === url ? prev : { ...prev, [moduleId]: url }));
   }, []);
+  const moduleCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  // Flashes the specific row a search result points at (tagged with
+  // data-search-item-id by each module) so the highlight lands on the exact
+  // thread/task/event/etc.; falls back to the whole module card when there's
+  // no such row (Notes, Weather, Stock Chart) or it isn't cached/rendered.
+  useEffect(() => {
+    if (!highlightedModule) return;
+    const { moduleId, itemId } = highlightedModule;
+    const cardElement = moduleCardRefs.current.get(moduleId);
+    if (!cardElement) return;
+
+    const itemElement = itemId
+      ? cardElement.querySelector<HTMLElement>(`[data-search-item-id="${CSS.escape(itemId)}"]`)
+      : null;
+    const target = itemElement ?? cardElement;
+
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    // Force a reflow so re-selecting the same target restarts the animation
+    // instead of a no-op (the class would otherwise already be present).
+    target.classList.remove("search-highlight");
+    void target.offsetWidth;
+    target.classList.add("search-highlight");
+
+    const timeoutId = setTimeout(() => target.classList.remove("search-highlight"), 1600);
+    return () => {
+      clearTimeout(timeoutId);
+      target.classList.remove("search-highlight");
+    };
+  }, [highlightedModule]);
+
   const hasGithubRepos = workspace.modules.some((module) => module.type === "github-repos");
   const [githubProfileUrl, setGithubProfileUrl] = useState<string | null>(
     () => getCached<string>(GITHUB_PROFILE_CACHE_KEY) ?? null,
@@ -136,6 +169,10 @@ export function WorkspaceView({
                 .filter(Boolean)
                 .join(" ")}
               key={moduleInstance.id}
+              ref={(element) => {
+                if (element) moduleCardRefs.current.set(moduleInstance.id, element);
+                else moduleCardRefs.current.delete(moduleInstance.id);
+              }}
             >
               <div
                 className="module-card-header"

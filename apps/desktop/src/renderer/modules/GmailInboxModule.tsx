@@ -219,6 +219,7 @@ export function GmailInboxModule({ moduleId, refreshIntervalsMinutes }: ModulePr
         return (
           <li
             key={thread.id}
+            data-search-item-id={thread.id}
             className={thread.unread ? "gmail-thread-item gmail-unread" : "gmail-thread-item"}
           >
             <div className="gmail-thread-header">

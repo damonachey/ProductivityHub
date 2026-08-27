@@ -36,7 +36,7 @@ export function SlashdotModule({ refreshIntervalsMinutes }: ModuleProps) {
   return (
     <ul className="repo-list">
       {headlines.map((headline) => (
-        <li key={headline.link} className="repo-item">
+        <li key={headline.link} data-search-item-id={headline.link} className="repo-item">
           <a className="repo-name" href={headline.link} target="_blank" rel="noreferrer">
             {headline.title}
           </a>

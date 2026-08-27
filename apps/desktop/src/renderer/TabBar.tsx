@@ -15,6 +15,7 @@ interface Props {
   onSetRememberActiveTab: (value: boolean) => void;
   lockLayout: boolean;
   onSetLockLayout: (value: boolean) => void;
+  onHighlightModule: (moduleId: string, itemId: string | null) => void;
 }
 
 export function TabBar({
@@ -29,6 +30,7 @@ export function TabBar({
   onSetRememberActiveTab,
   lockLayout,
   onSetLockLayout,
+  onHighlightModule,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState("");
@@ -82,6 +84,7 @@ export function TabBar({
 
   function goToResult(result: SearchResult): void {
     onSelect(result.workspaceId);
+    if (result.moduleId) onHighlightModule(result.moduleId, result.itemId);
     setSearchQuery("");
     searchInputRef.current?.blur();
   }

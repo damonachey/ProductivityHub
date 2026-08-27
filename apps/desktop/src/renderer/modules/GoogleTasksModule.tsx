@@ -328,7 +328,7 @@ export function GoogleTasksModule({ moduleId, lockLayout, refreshIntervalsMinute
           const pendingEntry = pending[task.id];
           const effectiveCompleted = (pendingEntry?.status ?? task.status) === "completed";
           return (
-            <li key={task.id} className="gtask-item">
+            <li key={task.id} data-search-item-id={task.id} className="gtask-item">
               <button
                 key={pendingEntry?.startedAt ?? "static"}
                 className={[

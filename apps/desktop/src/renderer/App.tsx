@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { TabBar } from "./TabBar";
 import { WorkspaceView } from "./WorkspaceView";
 import { useWorkspaces } from "./useWorkspaces";
@@ -23,6 +23,18 @@ export function App() {
     setLockLayout,
     refreshIntervalsMinutes,
   } = useWorkspaces();
+  // `token` increments on every highlight request so re-selecting the same
+  // search result restarts the flash animation instead of no-op'ing (React
+  // won't replay a CSS animation from an unchanged key alone).
+  const [highlightedModule, setHighlightedModule] = useState<{
+    moduleId: string;
+    itemId: string | null;
+    token: number;
+  } | null>(null);
+
+  function highlightModule(moduleId: string, itemId: string | null): void {
+    setHighlightedModule((prev) => ({ moduleId, itemId, token: (prev?.token ?? 0) + 1 }));
+  }
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent): void {
@@ -77,6 +89,7 @@ export function App() {
         onSetRememberActiveTab={setRememberActiveTab}
         lockLayout={lockLayout}
         onSetLockLayout={setLockLayout}
+        onHighlightModule={highlightModule}
       />
       <WorkspaceView
         workspace={activeWorkspace}
@@ -88,6 +101,7 @@ export function App() {
         }
         lockLayout={lockLayout}
         refreshIntervalsMinutes={refreshIntervalsMinutes}
+        highlightedModule={highlightedModule}
       />
     </div>
   );

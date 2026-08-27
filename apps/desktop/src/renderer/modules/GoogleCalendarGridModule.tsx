@@ -205,6 +205,7 @@ export function GoogleCalendarGridModule({ moduleId, refreshIntervalsMinutes }: 
                   {visible.map((event) => (
                     <a
                       key={event.id}
+                      data-search-item-id={event.id}
                       className="gcal-grid-event"
                       href={event.htmlLink}
                       target="_blank"

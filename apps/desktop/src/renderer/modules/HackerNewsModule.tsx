@@ -34,7 +34,7 @@ export function HackerNewsModule({ refreshIntervalsMinutes }: ModuleProps) {
   return (
     <ul className="repo-list">
       {stories.map((story) => (
-        <li key={story.id} className="repo-item">
+        <li key={story.id} data-search-item-id={story.id} className="repo-item">
           <a className="repo-name" href={story.url} target="_blank" rel="noreferrer">
             {story.title}
           </a>

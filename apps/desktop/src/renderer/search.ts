@@ -35,6 +35,12 @@ export interface SearchItem {
   workspaceId: string;
   workspaceName: string;
   moduleId: string | null;
+  // Identifies the specific row within the module (thread/task/event/etc.)
+  // so a result can jump straight to it - each module tags its row's DOM
+  // node with a matching `data-search-item-id`. Null falls back to just
+  // highlighting the whole module card (e.g. Notes, Weather, Stock Chart,
+  // which have no per-row DOM to target).
+  itemId: string | null;
   moduleTitle: string;
   category: string;
   snippet: string;
@@ -42,32 +48,38 @@ export interface SearchItem {
 }
 
 interface GmailCacheEntry {
+  id: string;
   subject: string;
   from: string;
   snippet: string;
 }
 
 interface TaskCacheEntry {
+  id: string;
   title: string;
   notes: string | null;
 }
 
 interface EventCacheEntry {
+  id: string;
   title: string;
   location: string | null;
 }
 
 interface SlashdotCacheEntry {
+  link: string;
   title: string;
   creator: string | null;
 }
 
 interface HackerNewsCacheEntry {
+  id: number;
   title: string;
   author: string;
 }
 
 interface FreshRssCacheEntry {
+  id: string;
   title: string;
   feedTitle: string;
 }
@@ -102,6 +114,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
       workspaceId: workspace.id,
       workspaceName: workspace.name,
       moduleId: null,
+      itemId: null,
       moduleTitle: workspace.name,
       category: "Tab",
       snippet: workspace.name,
@@ -115,6 +128,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
         workspaceId: workspace.id,
         workspaceName: workspace.name,
         moduleId: module.id,
+        itemId: null,
         moduleTitle,
         category: "Module",
         snippet: moduleTitle,
@@ -128,6 +142,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: null,
             moduleTitle,
             category: "Note",
             snippet: truncate(text, 80),
@@ -142,6 +157,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: item.id,
             moduleTitle,
             category: "Stock",
             snippet: item.symbol,
@@ -157,6 +173,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: null,
             moduleTitle,
             category: "Chart",
             snippet: symbol,
@@ -172,6 +189,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: null,
             moduleTitle,
             category: "Weather",
             snippet: location,
@@ -187,6 +205,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: thread.id,
             moduleTitle,
             category: "Email",
             snippet: thread.subject || thread.from,
@@ -202,6 +221,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: task.id,
             moduleTitle,
             category: "Task",
             snippet: task.title,
@@ -221,6 +241,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: event.id,
             moduleTitle,
             category: "Event",
             snippet: event.title,
@@ -236,6 +257,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: headline.link,
             moduleTitle,
             category: "Headline",
             snippet: headline.title,
@@ -251,6 +273,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: String(story.id),
             moduleTitle,
             category: "Story",
             snippet: story.title,
@@ -266,6 +289,7 @@ export async function buildSearchIndex(workspaces: Workspace[]): Promise<SearchI
             workspaceId: workspace.id,
             workspaceName: workspace.name,
             moduleId: module.id,
+            itemId: feedItem.id,
             moduleTitle,
             category: "Article",
             snippet: feedItem.title,

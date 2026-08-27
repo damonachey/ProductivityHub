@@ -128,6 +128,7 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
           return (
             <li
               key={item.id}
+              data-search-item-id={item.id}
               className={[
                 "stock-item",
                 item.id === draggedId && "dragging",

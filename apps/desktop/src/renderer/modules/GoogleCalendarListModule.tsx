@@ -170,7 +170,7 @@ export function GoogleCalendarListModule({ moduleId, refreshIntervalsMinutes }: 
 
         const { event } = row;
         return (
-          <li key={event.id} className="gcal-item">
+          <li key={event.id} data-search-item-id={event.id} className="gcal-item">
             <div className="gcal-body">
               <a className="gcal-title" href={event.htmlLink} target="_blank" rel="noreferrer">
                 {event.title}
