@@ -170,6 +170,14 @@ body {
   flex: 1 1 280px;
 }
 
+.module-card.dragging {
+  opacity: 0.4;
+}
+
+.module-card.drag-over {
+  box-shadow: inset 0 2px 0 #6366f1;
+}
+
 .module-card-header {
   display: flex;
   justify-content: space-between;
@@ -178,6 +186,10 @@ body {
   border-bottom: 1px solid #2a2b2e;
   font-weight: 600;
   font-size: 14px;
+}
+
+.module-card-header[draggable="true"] {
+  cursor: grab;
 }
 
 .module-card-header a {

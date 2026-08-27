@@ -29,12 +29,21 @@ interface Props {
   workspace: Workspace;
   onAddModule: (type: string) => void;
   onRemoveModule: (moduleId: string) => void;
+  onReorderModule: (draggedId: string, targetId: string) => void;
   lockLayout: boolean;
 }
 
-export function WorkspaceView({ workspace, onAddModule, onRemoveModule, lockLayout }: Props) {
+export function WorkspaceView({
+  workspace,
+  onAddModule,
+  onRemoveModule,
+  onReorderModule,
+  lockLayout,
+}: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [draggedModuleId, setDraggedModuleId] = useState<string | null>(null);
+  const [dragOverModuleId, setDragOverModuleId] = useState<string | null>(null);
   const { data: githubProfileUrl } = useCachedData<string>(
     GITHUB_PROFILE_CACHE_KEY,
     GITHUB_PROFILE_CACHE_TTL_MS,
@@ -55,10 +64,41 @@ export function WorkspaceView({ workspace, onAddModule, onRemoveModule, lockLayo
           const titleUrl = getTitleUrl(moduleInstance.type, githubProfileUrl);
 
           return (
-            <div className="module-card" key={moduleInstance.id}>
-              <div className="module-card-header">
+            <div
+              className={[
+                "module-card",
+                moduleInstance.id === draggedModuleId && "dragging",
+                moduleInstance.id === dragOverModuleId && "drag-over",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              key={moduleInstance.id}
+            >
+              <div
+                className="module-card-header"
+                draggable={!lockLayout}
+                onDragStart={() => setDraggedModuleId(moduleInstance.id)}
+                onDragEnd={() => {
+                  setDraggedModuleId(null);
+                  setDragOverModuleId(null);
+                }}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  if (draggedModuleId && draggedModuleId !== moduleInstance.id) {
+                    setDragOverModuleId(moduleInstance.id);
+                  }
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  if (draggedModuleId && draggedModuleId !== moduleInstance.id) {
+                    onReorderModule(draggedModuleId, moduleInstance.id);
+                  }
+                  setDraggedModuleId(null);
+                  setDragOverModuleId(null);
+                }}
+              >
                 {titleUrl ? (
-                  <a href={titleUrl} target="_blank" rel="noreferrer">
+                  <a href={titleUrl} target="_blank" rel="noreferrer" draggable={false}>
                     {definition.title}
                   </a>
                 ) : (

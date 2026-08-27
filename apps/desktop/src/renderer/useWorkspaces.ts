@@ -107,6 +107,26 @@ export function useWorkspaces() {
     );
   }, []);
 
+  const reorderModules = useCallback(
+    (workspaceId: string, draggedId: string, targetId: string) => {
+      setWorkspaces((prev) =>
+        (prev ?? []).map((workspace) => {
+          if (workspace.id !== workspaceId) return workspace;
+          const draggedIndex = workspace.modules.findIndex((m) => m.id === draggedId);
+          const targetIndex = workspace.modules.findIndex((m) => m.id === targetId);
+          if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
+            return workspace;
+          }
+          const modules = [...workspace.modules];
+          const [dragged] = modules.splice(draggedIndex, 1);
+          modules.splice(targetIndex, 0, dragged);
+          return { ...workspace, modules };
+        }),
+      );
+    },
+    [],
+  );
+
   const reorderWorkspaces = useCallback((draggedId: string, targetId: string) => {
     setWorkspaces((prev) => {
       const list = prev ?? [];
@@ -131,6 +151,7 @@ export function useWorkspaces() {
     renameWorkspace,
     addModule,
     removeModule,
+    reorderModules,
     reorderWorkspaces,
     rememberActiveTab,
     setRememberActiveTab,

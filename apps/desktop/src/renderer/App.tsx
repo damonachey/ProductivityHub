@@ -13,6 +13,7 @@ export function App() {
     renameWorkspace,
     addModule,
     removeModule,
+    reorderModules,
     reorderWorkspaces,
     rememberActiveTab,
     setRememberActiveTab,
@@ -72,6 +73,9 @@ export function App() {
         workspace={activeWorkspace}
         onAddModule={(type) => addModule(activeWorkspace.id, type)}
         onRemoveModule={(moduleId) => removeModule(activeWorkspace.id, moduleId)}
+        onReorderModule={(draggedId, targetId) =>
+          reorderModules(activeWorkspace.id, draggedId, targetId)
+        }
         lockLayout={lockLayout}
       />
     </div>
