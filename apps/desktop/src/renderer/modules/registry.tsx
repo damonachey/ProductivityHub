@@ -39,7 +39,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
   { type: "google-tasks", title: "Google Tasks", Component: GoogleTasksModule },
   {
     type: "google-calendar-list",
-    title: "Google Calendar (List)",
+    title: "Google Calendar",
     Component: GoogleCalendarListModule,
   },
 ];
