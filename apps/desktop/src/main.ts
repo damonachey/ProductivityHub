@@ -472,6 +472,7 @@ ipcMain.handle("stocks:save", (_event, moduleId: string, items: StockItem[]) =>
 );
 ipcMain.handle("stocks:get-quotes", (_event, symbols: string[]) => getQuotes(symbols));
 ipcMain.handle("stock-chart:get-symbol", (_event, moduleId: string) => getStockCharts()[moduleId] ?? "");
+ipcMain.handle("stock-chart:get-all", () => getStockCharts());
 ipcMain.handle("stock-chart:save-symbol", (_event, moduleId: string, symbol: string) =>
   saveStockChartSymbol(moduleId, symbol),
 );
@@ -518,6 +519,7 @@ ipcMain.handle("google-calendar:list-events-range", (_event, timeMin: string, ti
 ipcMain.handle("weather:get-location", (_event, moduleId: string) =>
   getWeatherLocations()[moduleId] ?? "",
 );
+ipcMain.handle("weather:get-all-locations", () => getWeatherLocations());
 ipcMain.handle("weather:save-location", (_event, moduleId: string, location: string) =>
   saveWeatherLocation(moduleId, location),
 );

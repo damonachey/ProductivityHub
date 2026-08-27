@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Workspace } from "../types";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { buildSearchIndex, filterSearchIndex, type SearchItem, type SearchResult } from "./search";
 
 interface Props {
   workspaces: Workspace[];
@@ -35,6 +36,17 @@ export function TabBar({
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [removeCandidate, setRemoveCandidate] = useState<Workspace | null>(null);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchIndex, setSearchIndex] = useState<SearchItem[] | null>(null);
+  const [activeResultIndex, setActiveResultIndex] = useState(0);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  function refreshSearchIndex(): void {
+    // Rebuilt fresh on every focus - cheap (local IPC + in-memory cache
+    // reads only), and keeps results from going stale between searches.
+    buildSearchIndex(workspaces).then(setSearchIndex);
+  }
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent): void {
@@ -44,14 +56,35 @@ export function TabBar({
         return;
       }
 
+      if (event.ctrlKey && event.key.toLowerCase() === "f") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
       if (event.key === "Escape") {
         setSettingsOpen(false);
+        setSearchQuery("");
+        searchInputRef.current?.blur();
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const searchResults: SearchResult[] = searchIndex ? filterSearchIndex(searchIndex, searchQuery) : [];
+
+  useEffect(() => {
+    setActiveResultIndex(0);
+  }, [searchQuery, searchResults.length]);
+
+  function goToResult(result: SearchResult): void {
+    onSelect(result.workspaceId);
+    setSearchQuery("");
+    searchInputRef.current?.blur();
+  }
 
   function startEditing(workspace: Workspace): void {
     if (lockLayout) return;
@@ -149,38 +182,98 @@ export function TabBar({
         </button>
       )}
 
-      <div className="tab-settings-wrapper">
-        <button
-          className="tab-settings-button"
-          aria-label="Quick Settings"
-          onClick={() => setSettingsOpen((open) => !open)}
-        >
-          ⚙
-        </button>
-        {settingsOpen && (
-          <>
-            <div className="popup-backdrop" onClick={() => setSettingsOpen(false)} />
-            <div className="settings-popup">
-              <div className="settings-popup-title">Quick Settings</div>
-              <label className="settings-checkbox">
-                <input
-                  type="checkbox"
-                  checked={lockLayout}
-                  onChange={(event) => onSetLockLayout(event.target.checked)}
-                />
-                Lock layout
-              </label>
-              <label className="settings-checkbox">
-                <input
-                  type="checkbox"
-                  checked={rememberActiveTab}
-                  onChange={(event) => onSetRememberActiveTab(event.target.checked)}
-                />
-                Remember active tab
-              </label>
+      <div className="tab-bar-actions">
+        <div className="tab-search-wrapper">
+          <input
+            ref={searchInputRef}
+            className="tab-search-input"
+            placeholder="CTRL-F to Search…"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            onFocus={() => {
+              setSearchFocused(true);
+              refreshSearchIndex();
+            }}
+            onBlur={() => setSearchFocused(false)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setSearchQuery("");
+                searchInputRef.current?.blur();
+              }
+              if (event.key === "ArrowDown" && searchResults.length > 0) {
+                event.preventDefault();
+                setActiveResultIndex((index) => (index + 1) % searchResults.length);
+              }
+              if (event.key === "ArrowUp" && searchResults.length > 0) {
+                event.preventDefault();
+                setActiveResultIndex((index) => (index - 1 + searchResults.length) % searchResults.length);
+              }
+              if (event.key === "Enter" && searchResults[activeResultIndex]) {
+                goToResult(searchResults[activeResultIndex]);
+              }
+            }}
+          />
+          {searchFocused && searchQuery.trim() && (
+            <div className="search-results">
+              {!searchIndex ? (
+                <p className="search-empty">Loading…</p>
+              ) : searchResults.length === 0 ? (
+                <p className="search-empty">No matches.</p>
+              ) : (
+                searchResults.map((result, index) => (
+                  <button
+                    key={result.key}
+                    className={`search-result${index === activeResultIndex ? " active" : ""}`}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => setActiveResultIndex(index)}
+                    onClick={() => goToResult(result)}
+                  >
+                    <span className="search-result-category">{result.category}</span>
+                    <span className="search-result-snippet">{result.snippet}</span>
+                    <span className="search-result-meta">
+                      {result.workspaceName}
+                      {result.moduleId ? ` · ${result.moduleTitle}` : ""}
+                    </span>
+                  </button>
+                ))
+              )}
             </div>
-          </>
-        )}
+          )}
+        </div>
+
+        <div className="tab-settings-wrapper">
+          <button
+            className="tab-settings-button"
+            aria-label="Quick Settings"
+            onClick={() => setSettingsOpen((open) => !open)}
+          >
+            ⚙
+          </button>
+          {settingsOpen && (
+            <>
+              <div className="popup-backdrop" onClick={() => setSettingsOpen(false)} />
+              <div className="settings-popup">
+                <div className="settings-popup-title">Quick Settings</div>
+                <label className="settings-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={lockLayout}
+                    onChange={(event) => onSetLockLayout(event.target.checked)}
+                  />
+                  Lock layout
+                </label>
+                <label className="settings-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={rememberActiveTab}
+                    onChange={(event) => onSetRememberActiveTab(event.target.checked)}
+                  />
+                  Remember active tab
+                </label>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {removeCandidate && (

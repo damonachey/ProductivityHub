@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import type { GmailThreadSummary } from "@productivityhub/google-mail";
+import { setCached } from "../cache";
+import { gmailInboxCacheKey } from "../search";
 import type { ModuleProps } from "./types";
 
 const ICON_PROPS = {
@@ -75,7 +77,7 @@ function formatDate(raw: string | null): string {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-export function GmailInboxModule({ refreshIntervalsMinutes }: ModuleProps) {
+export function GmailInboxModule({ moduleId, refreshIntervalsMinutes }: ModuleProps) {
   const refreshIntervalMs = refreshIntervalsMinutes.gmailInbox * 60_000;
   const [authChecked, setAuthChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
@@ -104,6 +106,7 @@ export function GmailInboxModule({ refreshIntervalsMinutes }: ModuleProps) {
           if (cancelled) return;
           setThreads(result);
           setError(null);
+          setCached(gmailInboxCacheKey(moduleId), result, refreshIntervalMs);
         })
         .catch((err: unknown) => {
           if (cancelled) return;

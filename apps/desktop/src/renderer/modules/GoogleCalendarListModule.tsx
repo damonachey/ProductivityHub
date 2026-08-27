@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import type { CalendarEvent } from "@productivityhub/google-calendar";
+import { setCached } from "../cache";
+import { googleCalendarListCacheKey } from "../search";
 import type { ModuleProps } from "./types";
 
 function dayDiff(event: CalendarEvent): number {
@@ -66,7 +68,7 @@ function groupEventsIntoRows(events: CalendarEvent[]): EventRow[] {
   return rows;
 }
 
-export function GoogleCalendarListModule({ refreshIntervalsMinutes }: ModuleProps) {
+export function GoogleCalendarListModule({ moduleId, refreshIntervalsMinutes }: ModuleProps) {
   const refreshIntervalMs = refreshIntervalsMinutes.googleCalendarList * 60_000;
   const [authChecked, setAuthChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
@@ -94,6 +96,7 @@ export function GoogleCalendarListModule({ refreshIntervalsMinutes }: ModuleProp
           if (cancelled) return;
           setEvents(result);
           setError(null);
+          setCached(googleCalendarListCacheKey(moduleId), result, refreshIntervalMs);
         })
         .catch((err: unknown) => {
           if (cancelled) return;

@@ -13,8 +13,10 @@ import type {
   BookmarksState,
   NotesState,
   Rect,
+  StockChartsState,
   StockItem,
   StocksState,
+  WeatherLocationsState,
   WorkspaceState,
 } from "../types";
 
@@ -39,6 +41,7 @@ declare global {
       saveStocks: (moduleId: string, items: StockItem[]) => Promise<void>;
       getStockQuotes: (symbols: string[]) => Promise<StockQuote[]>;
       getStockChartSymbol: (moduleId: string) => Promise<string>;
+      getAllStockChartSymbols: () => Promise<StockChartsState>;
       saveStockChartSymbol: (moduleId: string, symbol: string) => Promise<void>;
       getStockCandles: (symbol: string) => Promise<Candle[]>;
       isGmailAuthenticated: () => Promise<boolean>;
@@ -64,6 +67,7 @@ declare global {
       listGoogleCalendarEvents: () => Promise<CalendarEvent[]>;
       listGoogleCalendarEventsInRange: (timeMin: string, timeMax: string) => Promise<CalendarEvent[]>;
       getWeatherLocation: (moduleId: string) => Promise<string>;
+      getAllWeatherLocations: () => Promise<WeatherLocationsState>;
       saveWeatherLocation: (moduleId: string, location: string) => Promise<void>;
       getWeatherForecast: (location: string) => Promise<WeatherForecast>;
       getWebPageUrl: (moduleId: string) => Promise<string>;

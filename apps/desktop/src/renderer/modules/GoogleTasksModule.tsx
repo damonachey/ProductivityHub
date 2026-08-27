@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import type { GoogleTask } from "@productivityhub/google-tasks";
+import { setCached } from "../cache";
 import { registerPendingFlush, unregisterPendingFlush } from "../pendingActions";
+import { googleTasksCacheKey } from "../search";
 import type { ModuleProps } from "./types";
 
 // How long a completion toggle waits, undoable, before it's actually sent.
@@ -139,6 +141,7 @@ export function GoogleTasksModule({ moduleId, lockLayout, refreshIntervalsMinute
           if (cancelled) return;
           setTasks(result);
           setError(null);
+          setCached(googleTasksCacheKey(moduleId), result, refreshIntervalMs);
         })
         .catch((err: unknown) => {
           if (cancelled) return;

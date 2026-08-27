@@ -14,8 +14,10 @@ import type {
   BookmarksState,
   NotesState,
   Rect,
+  StockChartsState,
   StockItem,
   StocksState,
+  WeatherLocationsState,
   WorkspaceState,
 } from "./types.js";
 
@@ -48,6 +50,7 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("stocks:get-quotes", symbols),
   getStockChartSymbol: (moduleId: string): Promise<string> =>
     ipcRenderer.invoke("stock-chart:get-symbol", moduleId),
+  getAllStockChartSymbols: (): Promise<StockChartsState> => ipcRenderer.invoke("stock-chart:get-all"),
   saveStockChartSymbol: (moduleId: string, symbol: string): Promise<void> =>
     ipcRenderer.invoke("stock-chart:save-symbol", moduleId, symbol),
   getStockCandles: (symbol: string): Promise<Candle[]> =>
@@ -89,6 +92,8 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("google-calendar:list-events-range", timeMin, timeMax),
   getWeatherLocation: (moduleId: string): Promise<string> =>
     ipcRenderer.invoke("weather:get-location", moduleId),
+  getAllWeatherLocations: (): Promise<WeatherLocationsState> =>
+    ipcRenderer.invoke("weather:get-all-locations"),
   saveWeatherLocation: (moduleId: string, location: string): Promise<void> =>
     ipcRenderer.invoke("weather:save-location", moduleId, location),
   getWeatherForecast: (location: string): Promise<WeatherForecast> =>

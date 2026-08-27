@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CalendarEvent } from "@productivityhub/google-calendar";
+import { setCached } from "../cache";
+import { googleCalendarGridCacheKey } from "../search";
 import type { ModuleProps } from "./types";
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -55,7 +57,7 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-export function GoogleCalendarGridModule({ refreshIntervalsMinutes }: ModuleProps) {
+export function GoogleCalendarGridModule({ moduleId, refreshIntervalsMinutes }: ModuleProps) {
   const refreshIntervalMs = refreshIntervalsMinutes.googleCalendarGrid * 60_000;
   const [authChecked, setAuthChecked] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
@@ -95,6 +97,7 @@ export function GoogleCalendarGridModule({ refreshIntervalsMinutes }: ModuleProp
           if (cancelled) return;
           setEvents(result);
           setError(null);
+          setCached(googleCalendarGridCacheKey(moduleId), result, refreshIntervalMs);
         })
         .catch((err: unknown) => {
           if (cancelled) return;
