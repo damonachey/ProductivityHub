@@ -52,7 +52,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   googleCalendarList: 5,
   googleCalendarGrid: 5,
   weather: 15,
-  rss: 15,
+  rss: 60,
 };
 
 export interface AppSettings {
