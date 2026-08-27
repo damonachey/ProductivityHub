@@ -172,31 +172,26 @@ export function WeatherModule({
           ) : (
             <p className="weather-location-label">{forecast.location}</p>
           )}
-          <ul className="weather-list">
+          <div className="weather-columns">
             {forecast.days.map((day) => {
               const { icon, phrase } = describeWeather(day.weatherCode);
 
               return (
-                <li key={day.date} className="weather-day">
-                  <div className="weather-day-label">
-                    <span className="weather-day-name">{formatWeekday(day.date)}</span>
-                    <span className="weather-day-date">{formatDate(day.date)}</span>
+                <div key={day.date} className="weather-column">
+                  <div className="weather-column-heading">
+                    {formatWeekday(day.date)} {formatDate(day.date)}
                   </div>
-                  <span className="weather-icon" title={phrase}>
+                  <span className="weather-column-icon" title={phrase}>
                     {icon}
                   </span>
-                  <span className="weather-phrase">{phrase}</span>
-                  {day.precipitationChance > 0 && (
-                    <span className="weather-precip">💧{Math.round(day.precipitationChance)}%</span>
-                  )}
-                  <span className="weather-temps">
-                    <span className="weather-temp-max">{Math.round(day.temperatureMax)}°</span>
-                    <span className="weather-temp-min">{Math.round(day.temperatureMin)}°</span>
-                  </span>
-                </li>
+                  <div className="weather-column-temps">
+                    {Math.round(day.temperatureMax)}° / {Math.round(day.temperatureMin)}°
+                  </div>
+                  <div className="weather-column-phrase">{phrase}</div>
+                </div>
               );
             })}
-          </ul>
+          </div>
         </>
       )}
     </div>
