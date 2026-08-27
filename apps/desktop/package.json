@@ -39,6 +39,7 @@
   "build": {
     "appId": "net.achey.productivityhub.desktop",
     "productName": "ProductivityHub",
+    "executableName": "ProductivityHub",
     "directories": {
       "output": "release"
     },
