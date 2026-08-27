@@ -81,3 +81,55 @@ async function getQuote(symbol: string): Promise<StockQuote> {
 export async function getQuotes(symbols: string[]): Promise<StockQuote[]> {
   return Promise.all(symbols.map((symbol) => getQuote(symbol)));
 }
+
+export interface Candle {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+interface ChartQuoteArrays {
+  open: (number | null)[];
+  high: (number | null)[];
+  low: (number | null)[];
+  close: (number | null)[];
+  volume: (number | null)[];
+}
+
+interface ChartHistoryResponse {
+  chart: {
+    result: { timestamp?: number[]; indicators: { quote: ChartQuoteArrays[] } }[] | null;
+  };
+}
+
+export async function getDailyCandles(symbol: string, range = "3mo"): Promise<Candle[]> {
+  const response = await fetch(
+    `${CHART_URL}/${encodeURIComponent(symbol)}?range=${range}&interval=1d`,
+    { headers: { "User-Agent": USER_AGENT } },
+  );
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const data = (await response.json()) as ChartHistoryResponse;
+  const result = data.chart.result?.[0];
+  const timestamps = result?.timestamp;
+  const quote = result?.indicators.quote[0];
+  if (!timestamps || !quote) {
+    throw new Error("Symbol not found");
+  }
+
+  const candles: Candle[] = [];
+  for (let i = 0; i < timestamps.length; i++) {
+    const open = quote.open[i];
+    const high = quote.high[i];
+    const low = quote.low[i];
+    const close = quote.close[i];
+    if (open == null || high == null || low == null || close == null) continue;
+    candles.push({ time: timestamps[i], open, high, low, close, volume: quote.volume[i] ?? 0 });
+  }
+  return candles;
+}

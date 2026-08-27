@@ -8,6 +8,7 @@ import { SlashdotModule } from "./SlashdotModule";
 import { HackerNewsModule } from "./HackerNewsModule";
 import { FreshRssModule } from "./FreshRssModule";
 import { StockQuotesModule } from "./StockQuotesModule";
+import { StockChartModule } from "./StockChartModule";
 import { PlaceholderModule } from "./PlaceholderModule";
 import type { ModuleProps } from "./types";
 
@@ -31,6 +32,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
   { type: "hackernews", title: "Hacker News", Component: HackerNewsModule },
   { type: "freshrss", title: "FreshRSS", Component: FreshRssModule },
   { type: "stock-quotes", title: "Stock Quotes", Component: StockQuotesModule },
+  { type: "stock-chart", title: "Stock Chart", Component: StockChartModule },
   {
     type: "gmail-inbox",
     title: "Gmail Inbox",

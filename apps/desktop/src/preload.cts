@@ -3,7 +3,7 @@ import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
-import type { StockQuote } from "@productivityhub/yahoo-finance";
+import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import type {
   AppSettings,
   BookmarkItem,
@@ -42,6 +42,12 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("stocks:save", moduleId, items),
   getStockQuotes: (symbols: string[]): Promise<StockQuote[]> =>
     ipcRenderer.invoke("stocks:get-quotes", symbols),
+  getStockChartSymbol: (moduleId: string): Promise<string> =>
+    ipcRenderer.invoke("stock-chart:get-symbol", moduleId),
+  saveStockChartSymbol: (moduleId: string, symbol: string): Promise<void> =>
+    ipcRenderer.invoke("stock-chart:save-symbol", moduleId, symbol),
+  getStockCandles: (symbol: string): Promise<Candle[]> =>
+    ipcRenderer.invoke("stock-chart:get-candles", symbol),
   getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
   syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
     ipcRenderer.invoke("webpage:sync", moduleId, bounds),

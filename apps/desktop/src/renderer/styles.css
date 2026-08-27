@@ -713,3 +713,51 @@ body {
 .stock-add-button:hover {
   color: #fff;
 }
+
+.module-card:has(.stock-chart-module) {
+  max-width: 640px;
+  flex-basis: 560px;
+}
+
+.stock-chart-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stock-chart-form {
+  display: flex;
+  gap: 6px;
+}
+
+.stock-chart-form button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.stock-chart-form button:hover {
+  background: #2a2b2e;
+}
+
+.stock-chart-symbol {
+  font-weight: 600;
+  font-size: 15px;
+  color: #e4e4e7;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.stock-chart-symbol:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.stock-chart-svg {
+  width: 100%;
+  height: 220px;
+}

@@ -8,13 +8,14 @@ import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityh
 import { getHeadlines } from "@productivityhub/slashdot";
 import { getTopStories } from "@productivityhub/hackernews";
 import { getUnreadItems } from "@productivityhub/freshrss";
-import { getQuotes } from "@productivityhub/yahoo-finance";
+import { getDailyCandles, getQuotes } from "@productivityhub/yahoo-finance";
 import type {
   AppSettings,
   BookmarkItem,
   BookmarksState,
   NotesState,
   Rect,
+  StockChartsState,
   StockItem,
   StocksState,
   WebPagesState,
@@ -29,6 +30,7 @@ const NOTES_FILE = path.join(CONFIG_DIR, "notes.json");
 const BOOKMARKS_FILE = path.join(CONFIG_DIR, "bookmarks.json");
 const WEBPAGES_FILE = path.join(CONFIG_DIR, "webpages.json");
 const STOCKS_FILE = path.join(CONFIG_DIR, "stocks.json");
+const STOCK_CHARTS_FILE = path.join(CONFIG_DIR, "stock-charts.json");
 
 let mainWindow: BrowserWindow | null = null;
 const webPageViews = new Map<string, WebContentsView>();
@@ -127,6 +129,21 @@ function saveStocks(moduleId: string, items: StockItem[]): void {
   stocks[moduleId] = items;
   fs.mkdirSync(CONFIG_DIR, { recursive: true });
   fs.writeFileSync(STOCKS_FILE, JSON.stringify(stocks, null, 2));
+}
+
+function getStockCharts(): StockChartsState {
+  try {
+    return JSON.parse(fs.readFileSync(STOCK_CHARTS_FILE, "utf-8")) as StockChartsState;
+  } catch {
+    return {};
+  }
+}
+
+function saveStockChartSymbol(moduleId: string, symbol: string): void {
+  const charts = getStockCharts();
+  charts[moduleId] = symbol;
+  fs.mkdirSync(CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(STOCK_CHARTS_FILE, JSON.stringify(charts, null, 2));
 }
 
 function getWebPages(): WebPagesState {
@@ -278,6 +295,11 @@ ipcMain.handle("stocks:save", (_event, moduleId: string, items: StockItem[]) =>
   saveStocks(moduleId, items),
 );
 ipcMain.handle("stocks:get-quotes", (_event, symbols: string[]) => getQuotes(symbols));
+ipcMain.handle("stock-chart:get-symbol", (_event, moduleId: string) => getStockCharts()[moduleId] ?? "");
+ipcMain.handle("stock-chart:save-symbol", (_event, moduleId: string, symbol: string) =>
+  saveStockChartSymbol(moduleId, symbol),
+);
+ipcMain.handle("stock-chart:get-candles", (_event, symbol: string) => getDailyCandles(symbol));
 ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
 ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
   const view = ensureWebPageView(moduleId);

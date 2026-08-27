@@ -2,7 +2,7 @@ import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
-import type { StockQuote } from "@productivityhub/yahoo-finance";
+import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import type {
   AppSettings,
   BookmarkItem,
@@ -34,6 +34,9 @@ declare global {
       getStocks: () => Promise<StocksState>;
       saveStocks: (moduleId: string, items: StockItem[]) => Promise<void>;
       getStockQuotes: (symbols: string[]) => Promise<StockQuote[]>;
+      getStockChartSymbol: (moduleId: string) => Promise<string>;
+      saveStockChartSymbol: (moduleId: string, symbol: string) => Promise<void>;
+      getStockCandles: (symbol: string) => Promise<Candle[]>;
       getWebPageUrl: (moduleId: string) => Promise<string>;
       syncWebPage: (moduleId: string, bounds: Rect) => Promise<void>;
       hideWebPage: (moduleId: string) => Promise<void>;

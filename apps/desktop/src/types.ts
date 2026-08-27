@@ -22,6 +22,7 @@ export interface RefreshIntervalsMinutes {
   hackernews: number;
   freshrss: number;
   stockQuotes: number;
+  stockChart: number;
 }
 
 // Shared with the renderer so a settings.json missing some (or all) of
@@ -35,6 +36,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   hackernews: 15,
   freshrss: 5,
   stockQuotes: 5,
+  stockChart: 15,
 };
 
 export interface AppSettings {
@@ -76,3 +78,7 @@ export interface StockItem {
 // Keyed by module instance id, so each Stock Quotes module instance keeps
 // its own independent, ordered watchlist.
 export type StocksState = Record<string, StockItem[]>;
+
+// Keyed by module instance id: the configured symbol for a Stock Chart
+// module instance.
+export type StockChartsState = Record<string, string>;
