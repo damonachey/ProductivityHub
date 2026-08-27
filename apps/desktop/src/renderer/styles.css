@@ -615,6 +615,13 @@ body {
 .stock-symbol {
   font-weight: 600;
   color: #e4e4e7;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.stock-symbol:hover {
+  color: #fff;
+  text-decoration: underline;
 }
 
 .stock-name {

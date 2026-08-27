@@ -162,7 +162,15 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
                 </span>
               )}
               <div className="stock-info">
-                <span className="stock-symbol">{item.symbol}</span>
+                <a
+                  className="stock-symbol"
+                  href={`https://finance.yahoo.com/quote/${encodeURIComponent(item.symbol)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  draggable={false}
+                >
+                  {item.symbol}
+                </a>
                 {quote?.name && <span className="stock-name">{quote.name}</span>}
               </div>
               <div className="stock-quote">
