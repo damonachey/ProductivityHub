@@ -175,9 +175,8 @@ export function WeatherModule({
           <div className="weather-columns">
             {forecast.days.map((day) => {
               const { icon, phrase } = describeWeather(day.weatherCode);
-
-              return (
-                <div key={day.date} className="weather-column">
+              const content = (
+                <>
                   <div className="weather-column-heading">
                     {formatWeekday(day.date)} {formatDate(day.date)}
                   </div>
@@ -188,6 +187,22 @@ export function WeatherModule({
                     {Math.round(day.temperatureMax)}° / {Math.round(day.temperatureMin)}°
                   </div>
                   <div className="weather-column-phrase">{phrase}</div>
+                </>
+              );
+
+              return day.hourlyUrl ? (
+                <a
+                  key={day.date}
+                  className="weather-column weather-column-link"
+                  href={day.hourlyUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {content}
+                </a>
+              ) : (
+                <div key={day.date} className="weather-column">
+                  {content}
                 </div>
               );
             })}

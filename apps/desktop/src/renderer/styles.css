@@ -1443,8 +1443,8 @@ body {
 }
 
 .module-card:has(.weather-module) {
-  flex: 0 1 720px;
-  max-width: 720px;
+  flex: 0 1 576px;
+  max-width: 576px;
 }
 
 .weather-module {
@@ -1534,6 +1534,18 @@ body {
   align-items: center;
   text-align: center;
   gap: 4px;
+}
+
+.weather-column-link {
+  text-decoration: none;
+  border-radius: 6px;
+  padding: 4px 2px;
+  margin: -4px -2px;
+  cursor: pointer;
+}
+
+.weather-column-link:hover {
+  background: #33343a;
 }
 
 .weather-column-heading {

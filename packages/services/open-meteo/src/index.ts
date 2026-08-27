@@ -34,17 +34,39 @@ const STATE_NAME_TO_ABBR: Record<string, string> = Object.fromEntries(
 );
 
 function slugify(text: string): string {
-  return text
+  // Keep the place name's own letters (accents included) rather than
+  // transliterating them - Wunderground's real slugs percent-encode the
+  // UTF-8 city name as-is (e.g. "Canon City" with a tilde-n becomes
+  // "ca%C3%B1on-city"), they don't strip the accent down to a plain "n".
+  const slug = text
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+    .replace(/\s+/g, "-")
+    .replace(/[^\p{L}\p{N}-]+/gu, "");
+  return encodeURIComponent(slug);
+}
+
+function wundergroundCityBase(city: string, stateAbbr: string, zip: string | null): string {
+  const base = `https://www.wunderground.com/forecast/us/${stateAbbr.toLowerCase()}/${slugify(city)}`;
+  return zip ? `${base}/${zip}` : base;
 }
 
 function wundergroundForecastUrl(city: string, stateAbbr: string | null, zip: string | null): string | null {
   if (!stateAbbr) return null;
-  const base = `https://www.wunderground.com/forecast/us/${stateAbbr.toLowerCase()}/${slugify(city)}`;
-  return zip ? `${base}/${zip}` : base;
+  return wundergroundCityBase(city, stateAbbr, zip);
+}
+
+function wundergroundHourlyUrl(
+  city: string,
+  stateAbbr: string | null,
+  zip: string | null,
+  date: string,
+): string | null {
+  if (!stateAbbr) return null;
+  // The city base doubles as the hourly base too - Wunderground swaps
+  // "forecast" for "hourly" and appends a specific date at the end.
+  const base = wundergroundCityBase(city, stateAbbr, zip).replace("/forecast/", "/hourly/");
+  return `${base}/date/${date}`;
 }
 
 async function resolveZip(zip: string): Promise<Geocode> {
@@ -95,7 +117,7 @@ async function resolveSearch(query: string): Promise<Geocode> {
   const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
   url.search = new URLSearchParams({
     name,
-    count: "10",
+    count: "20",
     language: "en",
     format: "json",
   }).toString();
@@ -107,10 +129,16 @@ async function resolveSearch(query: string): Promise<Geocode> {
   const results = data.results ?? [];
   if (results.length === 0) throw new Error(`No location found for "${query}"`);
 
-  // Prefer a result in the requested state (if given), and prefer an actual
-  // populated place over an airport/other feature when there's a choice.
-  const stateFiltered = state ? results.filter((result) => stateMatches(result.admin1, state)) : results;
-  const pool = stateFiltered.length > 0 ? stateFiltered : results;
+  // A state was given but nothing returned actually matches it - do NOT
+  // silently fall back to an unfiltered (wrong-state) match here, that's how
+  // "Pine, CO" quietly resolved to Loomis, CA: the geocoder has no "Pine"
+  // entry in Colorado at all (the real place is indexed as "Pine Junction"),
+  // so the unfiltered top hit was some unrelated same-named town elsewhere.
+  if (state && !results.some((result) => stateMatches(result.admin1, state))) {
+    throw new Error(`No location found for "${name}" in "${state}" - try a zip code instead`);
+  }
+
+  const pool = state ? results.filter((result) => stateMatches(result.admin1, state)) : results;
   const best = pool.find((result) => result.feature_code?.startsWith("PPL")) ?? pool[0];
 
   const stateAbbr =
@@ -140,6 +168,7 @@ export interface DailyForecastDay {
   precipitationChance: number; // percent, 0-100
   precipitationAmount: number; // inches
   windSpeedMax: number; // mph
+  hourlyUrl: string | null;
 }
 
 export interface WeatherForecast {
@@ -194,6 +223,7 @@ export async function getForecast(locationInput: string): Promise<WeatherForecas
     precipitationChance: data.daily.precipitation_probability_max[i],
     precipitationAmount: data.daily.precipitation_sum[i],
     windSpeedMax: data.daily.windspeed_10m_max[i],
+    hourlyUrl: wundergroundHourlyUrl(geocode.city, geocode.stateAbbr, zip, date),
   }));
 
   return {
