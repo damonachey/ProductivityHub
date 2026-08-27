@@ -30,7 +30,7 @@ ph gh repos
 
 Lists your GitHub repos, most recently updated first. This is the only CLI command implemented so far — everything else so far is desktop-app-only.
 
-The desktop app (`.\phdesktop.cmd`, or `pnpm --filter @productivityhub/desktop build && pnpm --filter @productivityhub/desktop start`) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. A module's card title can be renamed per-instance (useful when you have several of the same module, e.g. Weather for different cities).
+The desktop app (`.\phdesktop.cmd` — see [Building from source](#building-from-source) if it's not built yet) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. A module's card title can be renamed per-instance (useful when you have several of the same module, e.g. Weather for different cities).
 
 ### Where things are stored
 
@@ -63,6 +63,30 @@ packages/
 ```
 
 `apps/` holds runnable programs; `packages/` holds shared logic with no entry point of its own. The desktop app consumes all of the `packages/services/*` packages above; the CLI so far only consumes `github` (see Usage).
+
+## Building from source
+
+Prerequisites: Node.js >= 20, and pnpm 11.24.0 (the repo pins this via `packageManager`; `corepack enable` picks it up automatically, or install directly with `npm install -g pnpm@11.24.0`).
+
+```
+pnpm install
+pnpm -r run build
+```
+
+`pnpm install` installs dependencies for every workspace package (`apps/*`, `packages/core`, `packages/services/*`). `pnpm -r run build` then builds all of them in dependency order — `packages/core`, then `packages/services/*` (which depend on it), then `apps/cli` and `apps/desktop` (which depend on those) — each via its own `tsc`, with the desktop app additionally running `vite build` for its renderer bundle. Every package's build output goes to its own `dist/`, which is what the other workspace packages, `ph.cmd`, and `phdesktop.cmd` actually run against — not the TypeScript source directly.
+
+To rebuild just one package after a change (faster than a full `-r build`, but only safe once everything has been built at least once): `pnpm --filter <package-name> build`, e.g. `pnpm --filter @productivityhub/desktop build` or `pnpm --filter @productivityhub/github build`. If you've changed a `packages/*` dependency, rebuild it too (or just re-run `pnpm -r run build`) — a filtered build only rebuilds that one package, not its dependencies.
+
+To typecheck everything without emitting: `pnpm -r run typecheck`.
+
+Once built, run it with:
+
+| What | Windows | Cross-platform |
+| --- | --- | --- |
+| Desktop app | `.\phdesktop.cmd` | `pnpm --filter @productivityhub/desktop start` |
+| CLI | `.\ph.cmd <command>` | `node apps/cli/dist/index.js <command>` |
+
+Both wrapper scripts run the built `dist/` output directly (no dev server), so after any source change you need to rebuild (see above) before relaunching for the change to take effect.
 
 ## Building portable executables
 
