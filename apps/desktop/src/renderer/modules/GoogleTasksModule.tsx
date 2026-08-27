@@ -58,6 +58,43 @@ function formatDue(due: string | null): string {
   });
 }
 
+// Groups the (already date-sorted) task list under "Past" / "Today" / one
+// header per distinct future date - or "No due date" for undated tasks,
+// which only appear at all when the "All" filter is on.
+function groupKeyFor(task: GoogleTask): string {
+  if (!task.due) return "none";
+  const diff = daysUntilDue(task.due);
+  if (diff < 0) return "past";
+  if (diff === 0) return "today";
+  return task.due.slice(0, 10);
+}
+
+function groupLabelFor(task: GoogleTask): string {
+  if (!task.due) return "No due date";
+  const diff = daysUntilDue(task.due);
+  if (diff < 0) return "Past";
+  if (diff === 0) return "Today";
+  return formatDue(task.due);
+}
+
+type TaskRow =
+  | { type: "header"; key: string; label: string }
+  | { type: "task"; key: string; task: GoogleTask };
+
+function groupTasksIntoRows(sortedTasks: GoogleTask[]): TaskRow[] {
+  const rows: TaskRow[] = [];
+  let lastGroupKey: string | null = null;
+  for (const task of sortedTasks) {
+    const groupKey = groupKeyFor(task);
+    if (groupKey !== lastGroupKey) {
+      rows.push({ type: "header", key: `header-${groupKey}`, label: groupLabelFor(task) });
+      lastGroupKey = groupKey;
+    }
+    rows.push({ type: "task", key: task.id, task });
+  }
+  return rows;
+}
+
 export function GoogleTasksModule({ moduleId, lockLayout, refreshIntervalsMinutes }: ModuleProps) {
   const refreshIntervalMs = refreshIntervalsMinutes.googleTasks * 60_000;
   const [authChecked, setAuthChecked] = useState(false);
@@ -254,6 +291,8 @@ export function GoogleTasksModule({ moduleId, lockLayout, refreshIntervalsMinute
       return a.due.localeCompare(b.due);
     });
 
+  const rows = groupTasksIntoRows(visibleTasks);
+
   return (
     <div className="gtasks">
       <div className="gtask-filters">
@@ -273,7 +312,16 @@ export function GoogleTasksModule({ moduleId, lockLayout, refreshIntervalsMinute
       )}
 
       <ul className="gtask-list">
-        {visibleTasks.map((task) => {
+        {rows.map((row) => {
+          if (row.type === "header") {
+            return (
+              <li key={row.key} className="gtask-group-header">
+                {row.label}
+              </li>
+            );
+          }
+
+          const task = row.task;
           const pendingEntry = pending[task.id];
           const effectiveCompleted = (pendingEntry?.status ?? task.status) === "completed";
           return (

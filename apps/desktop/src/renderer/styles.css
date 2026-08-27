@@ -983,6 +983,21 @@ body {
   gap: 8px;
 }
 
+.gtask-group-header {
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-top: 6px;
+  border-top: 1px solid #2a2b2e;
+}
+
+.gtask-group-header:first-child {
+  padding-top: 0;
+  border-top: none;
+}
+
 .gtask-item {
   display: flex;
   align-items: flex-start;
@@ -1094,6 +1109,11 @@ body {
 .gtask-textarea {
   resize: vertical;
   min-height: 40px;
+}
+
+.gtask-input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.4);
+  cursor: pointer;
 }
 
 .gtask-input::placeholder,
