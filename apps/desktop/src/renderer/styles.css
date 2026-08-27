@@ -1442,6 +1442,11 @@ body {
   padding: 0 4px;
 }
 
+.module-card:has(.weather-module) {
+  flex: 0 1 720px;
+  max-width: 720px;
+}
+
 .weather-module {
   display: flex;
   flex-direction: column;
