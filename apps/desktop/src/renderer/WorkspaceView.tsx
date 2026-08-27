@@ -1,8 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { RefreshIntervalsMinutes, Workspace } from "../types";
+import { getCached, setCached } from "./cache";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { MODULE_REGISTRY, getModuleDefinition } from "./modules/registry";
-import { useCachedData } from "./useCachedData";
 
 const GITHUB_PROFILE_CACHE_KEY = "github-profile-url";
 
@@ -72,11 +72,31 @@ export function WorkspaceView({
   const handleTitleUrlChange = useCallback((moduleId: string, url: string | null) => {
     setTitleUrlOverrides((prev) => (prev[moduleId] === url ? prev : { ...prev, [moduleId]: url }));
   }, []);
-  const { data: githubProfileUrl } = useCachedData<string>(
-    GITHUB_PROFILE_CACHE_KEY,
-    refreshIntervalsMinutes.githubProfileUrl * 60_000,
-    () => window.api.getGithubProfileUrl(),
+  const hasGithubRepos = workspace.modules.some((module) => module.type === "github-repos");
+  const [githubProfileUrl, setGithubProfileUrl] = useState<string | null>(
+    () => getCached<string>(GITHUB_PROFILE_CACHE_KEY) ?? null,
   );
+
+  useEffect(() => {
+    // Only fetch (and require GITHUB_TOKEN) when a GitHub Repos module is
+    // actually present - this used to run unconditionally on every mount,
+    // erroring on GITHUB_TOKEN even when no GitHub module was in view.
+    if (!hasGithubRepos) return;
+    if (getCached<string>(GITHUB_PROFILE_CACHE_KEY) !== undefined) return;
+
+    let cancelled = false;
+    window.api
+      .getGithubProfileUrl()
+      .then((result) => {
+        if (cancelled) return;
+        setCached(GITHUB_PROFILE_CACHE_KEY, result, refreshIntervalsMinutes.githubProfileUrl * 60_000);
+        setGithubProfileUrl(result);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [hasGithubRepos, refreshIntervalsMinutes.githubProfileUrl]);
 
   const filteredModules = MODULE_REGISTRY.filter((definition) =>
     definition.title.toLowerCase().includes(searchQuery.trim().toLowerCase()),

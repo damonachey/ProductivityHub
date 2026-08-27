@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, shell, WebContentsView } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
+import { randomUUID } from "node:crypto";
 import windowStateKeeper from "electron-window-state";
 import { CONFIG_DIR } from "@productivityhub/core";
 import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityhub/github";
@@ -79,14 +80,105 @@ const DEFAULT_SETTINGS: AppSettings = {
   refreshIntervalsMinutes: DEFAULT_REFRESH_INTERVALS_MINUTES,
 };
 
+// First run only (workspaces.json genuinely doesn't exist yet - not just
+// unreadable/corrupt) - seeds a starter 3-tab layout, along with the
+// companion per-module-instance files those modules read their own state
+// from, so it shows real configured content immediately rather than empty
+// "set a location"/"add a bookmark" placeholders.
+function buildDefaultWorkspaceState(): WorkspaceState {
+  const weatherModuleId = randomUUID();
+  const bookmarksModuleId = randomUUID();
+  const notesModuleId = randomUUID();
+  const hackernewsModuleId = randomUUID();
+  const slashdotModuleId = randomUUID();
+  const stockQuotesModuleId = randomUUID();
+  const stockChartSpyModuleId = randomUUID();
+  const stockChartQqqModuleId = randomUUID();
+
+  saveWeatherLocation(weatherModuleId, "Denver, CO");
+  saveBookmarks(bookmarksModuleId, [
+    {
+      id: randomUUID(),
+      url: "https://github.com/damonachey/ProductivityHub",
+      title: "ProductivityHub on GitHub",
+    },
+    { id: randomUUID(), url: "https://achey.net", title: "achey.net" },
+  ]);
+  saveNote(
+    notesModuleId,
+    [
+      "Locking/unlocking the layout:",
+      "Open Quick Settings (the ⚙ icon, top right, or Ctrl+,) and toggle \"Lock layout\".",
+      "",
+      "Unlocked: drag modules to reorder them, remove or rename a module's title, and use \"+ Add module\" to add new ones.",
+      "Locked: the layout stays fixed - routine actions (marking mail read, completing tasks, etc) still work.",
+    ].join("\n"),
+  );
+  saveStocks(
+    stockQuotesModuleId,
+    ["SPY", "QQQ", "AAPL", "AMZN", "MSFT", "GOOG", "NVDA"].map((symbol) => ({
+      id: randomUUID(),
+      symbol,
+    })),
+  );
+  saveStockChartSymbol(stockChartSpyModuleId, "SPY");
+  saveStockChartSymbol(stockChartQqqModuleId, "QQQ");
+
+  const homeId = randomUUID();
+
+  return {
+    activeId: homeId,
+    workspaces: [
+      {
+        id: homeId,
+        name: "Home",
+        modules: [
+          { id: weatherModuleId, type: "weather" },
+          { id: bookmarksModuleId, type: "bookmarks" },
+          { id: notesModuleId, type: "notes" },
+        ],
+      },
+      {
+        id: randomUUID(),
+        name: "News",
+        modules: [
+          { id: hackernewsModuleId, type: "hackernews" },
+          { id: slashdotModuleId, type: "slashdot" },
+        ],
+      },
+      {
+        id: randomUUID(),
+        name: "Markets",
+        modules: [
+          { id: stockQuotesModuleId, type: "stock-quotes" },
+          { id: stockChartSpyModuleId, type: "stock-chart" },
+          { id: stockChartQqqModuleId, type: "stock-chart" },
+        ],
+      },
+    ],
+  };
+}
+
 function getWorkspaceState(): WorkspaceState {
+  let raw: string;
   try {
-    const raw = JSON.parse(fs.readFileSync(WORKSPACES_FILE, "utf-8"));
-    // Back-compat: older files stored a plain Workspace[] with no activeId.
-    if (Array.isArray(raw)) {
-      return { activeId: raw[0]?.id ?? "", workspaces: raw };
+    raw = fs.readFileSync(WORKSPACES_FILE, "utf-8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
+      return { activeId: "", workspaces: [] };
     }
-    return raw as WorkspaceState;
+    const defaultState = buildDefaultWorkspaceState();
+    saveWorkspaceState(defaultState);
+    return defaultState;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    // Back-compat: older files stored a plain Workspace[] with no activeId.
+    if (Array.isArray(parsed)) {
+      return { activeId: parsed[0]?.id ?? "", workspaces: parsed };
+    }
+    return parsed as WorkspaceState;
   } catch {
     return { activeId: "", workspaces: [] };
   }
