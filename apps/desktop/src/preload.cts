@@ -6,6 +6,7 @@ import type { FreshRssItem } from "@productivityhub/freshrss";
 import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import type { GmailThreadSummary } from "@productivityhub/google-mail";
 import type { CreateTaskInput, GoogleTask } from "@productivityhub/google-tasks";
+import type { CalendarEvent } from "@productivityhub/google-calendar";
 import type {
   AppSettings,
   BookmarkItem,
@@ -76,6 +77,13 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("google-tasks:get-filters", moduleId),
   saveGoogleTasksFilters: (moduleId: string, filters: string[]): Promise<void> =>
     ipcRenderer.invoke("google-tasks:save-filters", moduleId, filters),
+  isGoogleCalendarAuthenticated: (): Promise<boolean> =>
+    ipcRenderer.invoke("google-calendar:is-authenticated"),
+  authenticateGoogleCalendar: (): Promise<void> =>
+    ipcRenderer.invoke("google-calendar:authenticate"),
+  disconnectGoogleCalendar: (): Promise<void> => ipcRenderer.invoke("google-calendar:disconnect"),
+  listGoogleCalendarEvents: (): Promise<CalendarEvent[]> =>
+    ipcRenderer.invoke("google-calendar:list-events"),
   getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
   syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
     ipcRenderer.invoke("webpage:sync", moduleId, bounds),

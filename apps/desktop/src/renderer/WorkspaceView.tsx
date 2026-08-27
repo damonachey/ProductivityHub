@@ -31,6 +31,9 @@ function getTitleUrl(type: string, githubProfileUrl: string | null): string | un
   if (type === "google-tasks") {
     return "https://tasks.google.com/tasks/";
   }
+  if (type === "google-calendar-list") {
+    return "https://calendar.google.com/calendar/";
+  }
   return undefined;
 }
 

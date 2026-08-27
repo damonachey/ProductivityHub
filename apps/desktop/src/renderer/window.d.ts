@@ -5,6 +5,7 @@ import type { FreshRssItem } from "@productivityhub/freshrss";
 import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import type { GmailThreadSummary } from "@productivityhub/google-mail";
 import type { CreateTaskInput, GoogleTask } from "@productivityhub/google-tasks";
+import type { CalendarEvent } from "@productivityhub/google-calendar";
 import type {
   AppSettings,
   BookmarkItem,
@@ -56,6 +57,10 @@ declare global {
       deleteGoogleTask: (taskId: string) => Promise<void>;
       getGoogleTasksFilters: (moduleId: string) => Promise<string[] | null>;
       saveGoogleTasksFilters: (moduleId: string, filters: string[]) => Promise<void>;
+      isGoogleCalendarAuthenticated: () => Promise<boolean>;
+      authenticateGoogleCalendar: () => Promise<void>;
+      disconnectGoogleCalendar: () => Promise<void>;
+      listGoogleCalendarEvents: () => Promise<CalendarEvent[]>;
       getWebPageUrl: (moduleId: string) => Promise<string>;
       syncWebPage: (moduleId: string, bounds: Rect) => Promise<void>;
       hideWebPage: (moduleId: string) => Promise<void>;

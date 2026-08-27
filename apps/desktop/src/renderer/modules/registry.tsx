@@ -11,7 +11,7 @@ import { StockQuotesModule } from "./StockQuotesModule";
 import { StockChartModule } from "./StockChartModule";
 import { GmailInboxModule } from "./GmailInboxModule";
 import { GoogleTasksModule } from "./GoogleTasksModule";
-import { PlaceholderModule } from "./PlaceholderModule";
+import { GoogleCalendarListModule } from "./GoogleCalendarListModule";
 import type { ModuleProps } from "./types";
 
 export interface ModuleDefinition {
@@ -38,9 +38,9 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
   { type: "gmail-inbox", title: "Gmail Inbox", Component: GmailInboxModule },
   { type: "google-tasks", title: "Google Tasks", Component: GoogleTasksModule },
   {
-    type: "google-calendar",
-    title: "Google Calendar",
-    Component: () => <PlaceholderModule title="Google Calendar" />,
+    type: "google-calendar-list",
+    title: "Google Calendar (List)",
+    Component: GoogleCalendarListModule,
   },
 ];
 

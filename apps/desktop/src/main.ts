@@ -29,6 +29,12 @@ import {
   setTaskStatus as setGoogleTaskStatus,
   type CreateTaskInput,
 } from "@productivityhub/google-tasks";
+import {
+  authenticate as authenticateGoogleCalendar,
+  disconnect as disconnectGoogleCalendar,
+  isAuthenticated as isGoogleCalendarAuthenticated,
+  listUpcomingEvents,
+} from "@productivityhub/google-calendar";
 import type {
   AppSettings,
   BookmarkItem,
@@ -386,6 +392,15 @@ ipcMain.handle("google-tasks:get-filters", (_event, moduleId: string) =>
 ipcMain.handle("google-tasks:save-filters", (_event, moduleId: string, filters: string[]) =>
   saveGoogleTasksFilters(moduleId, filters),
 );
+ipcMain.handle("google-calendar:is-authenticated", () => isGoogleCalendarAuthenticated());
+ipcMain.handle("google-calendar:authenticate", () =>
+  authenticateGoogleCalendar((authUrl) => shell.openExternal(authUrl)),
+);
+ipcMain.handle("google-calendar:disconnect", () => disconnectGoogleCalendar());
+// Scoped to "list-events" (rather than a generic "get events") so a future
+// grid/month view can add its own date-ranged query alongside this one
+// without colliding - both would share the same auth channels above.
+ipcMain.handle("google-calendar:list-events", () => listUpcomingEvents());
 ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
 ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
   const view = ensureWebPageView(moduleId);

@@ -48,6 +48,9 @@ importers:
       '@productivityhub/github':
         specifier: workspace:*
         version: link:../../packages/services/github
+      '@productivityhub/google-calendar':
+        specifier: workspace:*
+        version: link:../../packages/services/google-calendar
       '@productivityhub/google-mail':
         specifier: workspace:*
         version: link:../../packages/services/google-mail
