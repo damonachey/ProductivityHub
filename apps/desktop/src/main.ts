@@ -34,6 +34,7 @@ import {
   disconnect as disconnectGoogleCalendar,
   isAuthenticated as isGoogleCalendarAuthenticated,
   listUpcomingEvents,
+  listEventsInRange as listGoogleCalendarEventsInRange,
 } from "@productivityhub/google-calendar";
 import type {
   AppSettings,
@@ -401,6 +402,9 @@ ipcMain.handle("google-calendar:disconnect", () => disconnectGoogleCalendar());
 // grid/month view can add its own date-ranged query alongside this one
 // without colliding - both would share the same auth channels above.
 ipcMain.handle("google-calendar:list-events", () => listUpcomingEvents());
+ipcMain.handle("google-calendar:list-events-range", (_event, timeMin: string, timeMax: string) =>
+  listGoogleCalendarEventsInRange(timeMin, timeMax),
+);
 ipcMain.handle("webpage:get-url", (_event, moduleId: string) => getWebPages()[moduleId] ?? "");
 ipcMain.handle("webpage:sync", (_event, moduleId: string, bounds: Rect) => {
   const view = ensureWebPageView(moduleId);

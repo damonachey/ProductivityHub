@@ -84,6 +84,8 @@ contextBridge.exposeInMainWorld("api", {
   disconnectGoogleCalendar: (): Promise<void> => ipcRenderer.invoke("google-calendar:disconnect"),
   listGoogleCalendarEvents: (): Promise<CalendarEvent[]> =>
     ipcRenderer.invoke("google-calendar:list-events"),
+  listGoogleCalendarEventsInRange: (timeMin: string, timeMax: string): Promise<CalendarEvent[]> =>
+    ipcRenderer.invoke("google-calendar:list-events-range", timeMin, timeMax),
   getWebPageUrl: (moduleId: string): Promise<string> => ipcRenderer.invoke("webpage:get-url", moduleId),
   syncWebPage: (moduleId: string, bounds: Rect): Promise<void> =>
     ipcRenderer.invoke("webpage:sync", moduleId, bounds),

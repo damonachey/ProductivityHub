@@ -26,6 +26,7 @@ export interface RefreshIntervalsMinutes {
   gmailInbox: number;
   googleTasks: number;
   googleCalendarList: number;
+  googleCalendarGrid: number;
 }
 
 // Shared with the renderer so a settings.json missing some (or all) of
@@ -43,6 +44,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   gmailInbox: 1,
   googleTasks: 5,
   googleCalendarList: 5,
+  googleCalendarGrid: 5,
 };
 
 export interface AppSettings {

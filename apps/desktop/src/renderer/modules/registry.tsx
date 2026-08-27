@@ -12,6 +12,7 @@ import { StockChartModule } from "./StockChartModule";
 import { GmailInboxModule } from "./GmailInboxModule";
 import { GoogleTasksModule } from "./GoogleTasksModule";
 import { GoogleCalendarListModule } from "./GoogleCalendarListModule";
+import { GoogleCalendarGridModule } from "./GoogleCalendarGridModule";
 import type { ModuleProps } from "./types";
 
 export interface ModuleDefinition {
@@ -41,6 +42,11 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
     type: "google-calendar-list",
     title: "Google Calendar",
     Component: GoogleCalendarListModule,
+  },
+  {
+    type: "google-calendar-grid",
+    title: "Google Calendar",
+    Component: GoogleCalendarGridModule,
   },
 ];
 

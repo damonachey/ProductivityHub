@@ -193,14 +193,13 @@ interface RawEvent {
   status?: string;
 }
 
-export async function listUpcomingEvents(maxResults = 20): Promise<CalendarEvent[]> {
+async function fetchEvents(params: Record<string, string>): Promise<CalendarEvent[]> {
   const accessToken = await getAccessToken();
   const url = new URL(CALENDAR_API_BASE);
   url.search = new URLSearchParams({
-    timeMin: new Date().toISOString(),
     singleEvents: "true",
     orderBy: "startTime",
-    maxResults: String(maxResults),
+    ...params,
   }).toString();
 
   const response = await fetch(url, {
@@ -223,4 +222,20 @@ export async function listUpcomingEvents(maxResults = 20): Promise<CalendarEvent
         allDay,
       };
     });
+}
+
+export async function listUpcomingEvents(maxResults = 20): Promise<CalendarEvent[]> {
+  return fetchEvents({
+    timeMin: new Date().toISOString(),
+    maxResults: String(maxResults),
+  });
+}
+
+// Grid view needs every event in a fixed calendar range (not just the next N
+// upcoming), so it queries by [timeMin, timeMax) instead of maxResults.
+export async function listEventsInRange(
+  timeMin: string,
+  timeMax: string,
+): Promise<CalendarEvent[]> {
+  return fetchEvents({ timeMin, timeMax, maxResults: "2500" });
 }

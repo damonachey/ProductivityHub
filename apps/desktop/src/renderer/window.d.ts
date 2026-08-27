@@ -61,6 +61,7 @@ declare global {
       authenticateGoogleCalendar: () => Promise<void>;
       disconnectGoogleCalendar: () => Promise<void>;
       listGoogleCalendarEvents: () => Promise<CalendarEvent[]>;
+      listGoogleCalendarEventsInRange: (timeMin: string, timeMax: string) => Promise<CalendarEvent[]>;
       getWebPageUrl: (moduleId: string) => Promise<string>;
       syncWebPage: (moduleId: string, bounds: Rect) => Promise<void>;
       hideWebPage: (moduleId: string) => Promise<void>;

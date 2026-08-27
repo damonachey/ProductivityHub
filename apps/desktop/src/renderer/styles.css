@@ -1284,3 +1284,141 @@ body {
   color: #fff;
   text-decoration: underline;
 }
+
+.module-card:has(.gcal-grid-module) {
+  flex: 0 1 720px;
+  max-width: 720px;
+}
+
+.module-card:has(.gcal-grid-module) .module-card-body {
+  max-height: none;
+}
+
+.gcal-grid-module {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gcal-grid-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gcal-grid-nav button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.gcal-grid-nav button:hover {
+  background: #2a2b2e;
+}
+
+.gcal-grid-month-label {
+  font-weight: 600;
+  flex: 1;
+}
+
+.gcal-grid-today {
+  margin-left: auto;
+}
+
+.gcal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #2a2b2e;
+  border: 1px solid #2a2b2e;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.gcal-grid-weekday {
+  background: #1e1f22;
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+.gcal-grid-day {
+  background: #26272b;
+  min-width: 0;
+  min-height: 84px;
+  padding: 4px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gcal-grid-day-outside {
+  background: #212226;
+}
+
+.gcal-grid-day-outside .gcal-grid-day-number {
+  color: #52525b;
+}
+
+.gcal-grid-day-today {
+  box-shadow: inset 0 0 0 1px #6366f1;
+}
+
+.gcal-grid-day-number {
+  font-size: 12px;
+  color: #a1a1aa;
+}
+
+.gcal-grid-day-today .gcal-grid-day-number {
+  color: #818cf8;
+  font-weight: 600;
+}
+
+.gcal-grid-day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gcal-grid-event {
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  color: #e4e4e7;
+  text-decoration: none;
+  font-size: 11px;
+  background: #33343a;
+  border-radius: 3px;
+  padding: 1px 4px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.gcal-grid-event:hover {
+  background: #3f3f46;
+  text-decoration: underline;
+}
+
+.gcal-grid-event-time {
+  color: #a1a1aa;
+  flex-shrink: 0;
+}
+
+.gcal-grid-event-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gcal-grid-more {
+  font-size: 11px;
+  color: #71717a;
+  padding: 0 4px;
+}
