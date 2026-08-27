@@ -19,6 +19,7 @@ export function App() {
     setRememberActiveTab,
     lockLayout,
     setLockLayout,
+    refreshIntervalsMinutes,
   } = useWorkspaces();
 
   useEffect(() => {
@@ -77,6 +78,7 @@ export function App() {
           reorderModules(activeWorkspace.id, draggedId, targetId)
         }
         lockLayout={lockLayout}
+        refreshIntervalsMinutes={refreshIntervalsMinutes}
       />
     </div>
   );

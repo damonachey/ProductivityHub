@@ -20,6 +20,7 @@ import type {
   WebPagesState,
   WorkspaceState,
 } from "./types.js";
+import { DEFAULT_REFRESH_INTERVALS_MINUTES } from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
 const WORKSPACES_FILE = path.join(CONFIG_DIR, "workspaces.json");
@@ -38,7 +39,11 @@ function normalizeUrl(raw: string): string {
   return /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
 }
 
-const DEFAULT_SETTINGS: AppSettings = { rememberActiveTab: true, lockLayout: false };
+const DEFAULT_SETTINGS: AppSettings = {
+  rememberActiveTab: true,
+  lockLayout: false,
+  refreshIntervalsMinutes: DEFAULT_REFRESH_INTERVALS_MINUTES,
+};
 
 function getWorkspaceState(): WorkspaceState {
   try {
@@ -60,9 +65,14 @@ function saveWorkspaceState(state: WorkspaceState): void {
 
 function getSettings(): AppSettings {
   try {
+    const stored = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8")) as Partial<AppSettings>;
     return {
       ...DEFAULT_SETTINGS,
-      ...(JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8")) as Partial<AppSettings>),
+      ...stored,
+      refreshIntervalsMinutes: {
+        ...DEFAULT_REFRESH_INTERVALS_MINUTES,
+        ...stored.refreshIntervalsMinutes,
+      },
     };
   } catch {
     return DEFAULT_SETTINGS;

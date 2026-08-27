@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Workspace } from "../types";
+import type { RefreshIntervalsMinutes, Workspace } from "../types";
+import { DEFAULT_REFRESH_INTERVALS_MINUTES } from "../types";
 
 function defaultWorkspaces(): Workspace[] {
   return [
@@ -16,6 +17,9 @@ export function useWorkspaces() {
   const [activeId, setActiveId] = useState<string>("");
   const [rememberActiveTab, setRememberActiveTabState] = useState(true);
   const [lockLayout, setLockLayoutState] = useState(false);
+  const [refreshIntervalsMinutes, setRefreshIntervalsMinutes] = useState<RefreshIntervalsMinutes>(
+    DEFAULT_REFRESH_INTERVALS_MINUTES,
+  );
 
   useEffect(() => {
     Promise.all([window.api.getWorkspaces(), window.api.getSettings()]).then(
@@ -24,6 +28,7 @@ export function useWorkspaces() {
         setWorkspaces(initial);
         setRememberActiveTabState(settings.rememberActiveTab);
         setLockLayoutState(settings.lockLayout);
+        setRefreshIntervalsMinutes(settings.refreshIntervalsMinutes);
 
         if (settings.rememberActiveTab) {
           const restored = initial.some((workspace) => workspace.id === state.activeId);
@@ -44,17 +49,17 @@ export function useWorkspaces() {
   const setRememberActiveTab = useCallback(
     (value: boolean) => {
       setRememberActiveTabState(value);
-      window.api.saveSettings({ rememberActiveTab: value, lockLayout });
+      window.api.saveSettings({ rememberActiveTab: value, lockLayout, refreshIntervalsMinutes });
     },
-    [lockLayout],
+    [lockLayout, refreshIntervalsMinutes],
   );
 
   const setLockLayout = useCallback(
     (value: boolean) => {
       setLockLayoutState(value);
-      window.api.saveSettings({ rememberActiveTab, lockLayout: value });
+      window.api.saveSettings({ rememberActiveTab, lockLayout: value, refreshIntervalsMinutes });
     },
-    [rememberActiveTab],
+    [rememberActiveTab, refreshIntervalsMinutes],
   );
 
   useEffect(() => {
@@ -157,5 +162,6 @@ export function useWorkspaces() {
     setRememberActiveTab,
     lockLayout,
     setLockLayout,
+    refreshIntervalsMinutes,
   };
 }

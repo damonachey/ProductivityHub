@@ -4,8 +4,6 @@ import type { StockItem } from "../../types";
 import { getCached, setCached } from "../cache";
 import type { ModuleProps } from "./types";
 
-const REFRESH_INTERVAL_MS = 5 * 60 * 1000;
-
 function quoteCacheKey(moduleId: string): string {
   return `stock-quotes-${moduleId}`;
 }
@@ -24,7 +22,8 @@ function formatChange(quote: StockQuote): string {
   return `${sign}${quote.change.toFixed(2)} (${sign}${quote.changePercent.toFixed(2)}%)`;
 }
 
-export function StockQuotesModule({ moduleId, lockLayout }: ModuleProps) {
+export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinutes }: ModuleProps) {
+  const refreshIntervalMs = refreshIntervalsMinutes.stockQuotes * 60_000;
   const [items, setItems] = useState<StockItem[] | null>(null);
   const [quotes, setQuotes] = useState<Record<string, StockQuote> | null>(
     () => getCached<Record<string, StockQuote>>(quoteCacheKey(moduleId)) ?? null,
@@ -62,17 +61,17 @@ export function StockQuotesModule({ moduleId, lockLayout }: ModuleProps) {
           bySymbol[quote.symbol] = quote;
         });
         setQuotes(bySymbol);
-        setCached(quoteCacheKey(moduleId), bySymbol, REFRESH_INTERVAL_MS);
+        setCached(quoteCacheKey(moduleId), bySymbol, refreshIntervalMs);
       });
     }
 
     fetchQuotes();
-    const interval = setInterval(fetchQuotes, REFRESH_INTERVAL_MS);
+    const interval = setInterval(fetchQuotes, refreshIntervalMs);
     return () => {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [items, moduleId]);
+  }, [items, moduleId, refreshIntervalMs]);
 
   function persist(next: StockItem[]): void {
     setItems(next);

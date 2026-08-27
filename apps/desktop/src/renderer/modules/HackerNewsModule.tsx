@@ -1,8 +1,8 @@
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import { useCachedData } from "../useCachedData";
+import type { ModuleProps } from "./types";
 
 const CACHE_KEY = "hackernews-stories";
-const CACHE_TTL_MS = 15 * 60 * 1000; // rankings shift over minutes, not seconds
 
 function formatAge(unixSeconds: number): string {
   if (!unixSeconds) return "unknown";
@@ -13,10 +13,10 @@ function formatAge(unixSeconds: number): string {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-export function HackerNewsModule() {
+export function HackerNewsModule({ refreshIntervalsMinutes }: ModuleProps) {
   const { data: stories, error } = useCachedData<HackerNewsStory[]>(
     CACHE_KEY,
-    CACHE_TTL_MS,
+    refreshIntervalsMinutes.hackernews * 60_000,
     () => window.api.getHackerNewsStories(),
   );
 

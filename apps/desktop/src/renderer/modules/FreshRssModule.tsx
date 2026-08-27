@@ -1,8 +1,8 @@
 import type { FreshRssItem } from "@productivityhub/freshrss";
 import { useCachedData } from "../useCachedData";
+import type { ModuleProps } from "./types";
 
 const CACHE_KEY = "freshrss-unread";
-const CACHE_TTL_MS = 5 * 60 * 1000; // unread counts should stay reasonably fresh
 
 function formatDate(publishedAt: string | null): string {
   if (!publishedAt) return "unknown";
@@ -15,9 +15,11 @@ function formatDate(publishedAt: string | null): string {
   });
 }
 
-export function FreshRssModule() {
-  const { data: items, error } = useCachedData<FreshRssItem[]>(CACHE_KEY, CACHE_TTL_MS, () =>
-    window.api.getFreshRssUnread(),
+export function FreshRssModule({ refreshIntervalsMinutes }: ModuleProps) {
+  const { data: items, error } = useCachedData<FreshRssItem[]>(
+    CACHE_KEY,
+    refreshIntervalsMinutes.freshrss * 60_000,
+    () => window.api.getFreshRssUnread(),
   );
 
   if (error) {

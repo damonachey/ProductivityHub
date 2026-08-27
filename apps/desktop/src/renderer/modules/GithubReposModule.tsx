@@ -1,8 +1,8 @@
 import type { RepoSummary } from "@productivityhub/github";
 import { useCachedData } from "../useCachedData";
+import type { ModuleProps } from "./types";
 
 const CACHE_KEY = "github-repos";
-const CACHE_TTL_MS = 5 * 60 * 1000; // repos change infrequently
 
 function formatDate(iso: string | null): string {
   if (!iso) return "unknown";
@@ -13,9 +13,11 @@ function formatDate(iso: string | null): string {
   });
 }
 
-export function GithubReposModule() {
-  const { data: repos, error } = useCachedData<RepoSummary[]>(CACHE_KEY, CACHE_TTL_MS, () =>
-    window.api.listRepos(),
+export function GithubReposModule({ refreshIntervalsMinutes }: ModuleProps) {
+  const { data: repos, error } = useCachedData<RepoSummary[]>(
+    CACHE_KEY,
+    refreshIntervalsMinutes.githubRepos * 60_000,
+    () => window.api.listRepos(),
   );
 
   if (error) {

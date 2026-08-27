@@ -1,10 +1,9 @@
 import { useState } from "react";
-import type { Workspace } from "../types";
+import type { RefreshIntervalsMinutes, Workspace } from "../types";
 import { MODULE_REGISTRY, getModuleDefinition } from "./modules/registry";
 import { useCachedData } from "./useCachedData";
 
 const GITHUB_PROFILE_CACHE_KEY = "github-profile-url";
-const GITHUB_PROFILE_CACHE_TTL_MS = 60 * 60 * 1000; // rarely changes
 
 function getTitleUrl(type: string, githubProfileUrl: string | null): string | undefined {
   if (type === "github-repos") {
@@ -34,6 +33,7 @@ interface Props {
   onRemoveModule: (moduleId: string) => void;
   onReorderModule: (draggedId: string, targetId: string) => void;
   lockLayout: boolean;
+  refreshIntervalsMinutes: RefreshIntervalsMinutes;
 }
 
 export function WorkspaceView({
@@ -42,6 +42,7 @@ export function WorkspaceView({
   onRemoveModule,
   onReorderModule,
   lockLayout,
+  refreshIntervalsMinutes,
 }: Props) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,7 +50,7 @@ export function WorkspaceView({
   const [dragOverModuleId, setDragOverModuleId] = useState<string | null>(null);
   const { data: githubProfileUrl } = useCachedData<string>(
     GITHUB_PROFILE_CACHE_KEY,
-    GITHUB_PROFILE_CACHE_TTL_MS,
+    refreshIntervalsMinutes.githubProfileUrl * 60_000,
     () => window.api.getGithubProfileUrl(),
   );
 
@@ -117,7 +118,11 @@ export function WorkspaceView({
                 )}
               </div>
               <div className="module-card-body">
-                <Component moduleId={moduleInstance.id} lockLayout={lockLayout} />
+                <Component
+                  moduleId={moduleInstance.id}
+                  lockLayout={lockLayout}
+                  refreshIntervalsMinutes={refreshIntervalsMinutes}
+                />
               </div>
             </div>
           );

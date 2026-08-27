@@ -1,8 +1,8 @@
 import type { NotificationSummary } from "@productivityhub/github";
 import { useCachedData } from "../useCachedData";
+import type { ModuleProps } from "./types";
 
 const CACHE_KEY = "github-notifications";
-const CACHE_TTL_MS = 60 * 1000; // notifications should stay fresher than repos
 
 function formatDate(iso: string | null): string {
   if (!iso) return "unknown";
@@ -17,10 +17,10 @@ function formatReason(reason: string): string {
   return reason.replace(/_/g, " ");
 }
 
-export function GithubNotificationsModule() {
+export function GithubNotificationsModule({ refreshIntervalsMinutes }: ModuleProps) {
   const { data: notifications, error } = useCachedData<NotificationSummary[]>(
     CACHE_KEY,
-    CACHE_TTL_MS,
+    refreshIntervalsMinutes.githubNotifications * 60_000,
     () => window.api.listNotifications(),
   );
 

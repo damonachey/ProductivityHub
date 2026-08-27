@@ -1,8 +1,8 @@
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import { useCachedData } from "../useCachedData";
+import type { ModuleProps } from "./types";
 
 const CACHE_KEY = "slashdot-headlines";
-const CACHE_TTL_MS = 15 * 60 * 1000; // headlines update every hour or so
 
 function formatDate(pubDate: string | null): string {
   if (!pubDate) return "unknown";
@@ -15,10 +15,10 @@ function formatDate(pubDate: string | null): string {
   });
 }
 
-export function SlashdotModule() {
+export function SlashdotModule({ refreshIntervalsMinutes }: ModuleProps) {
   const { data: headlines, error } = useCachedData<SlashdotHeadline[]>(
     CACHE_KEY,
-    CACHE_TTL_MS,
+    refreshIntervalsMinutes.slashdot * 60_000,
     () => window.api.getSlashdotHeadlines(),
   );
 

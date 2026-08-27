@@ -14,9 +14,33 @@ export interface WorkspaceState {
   workspaces: Workspace[];
 }
 
+export interface RefreshIntervalsMinutes {
+  githubRepos: number;
+  githubNotifications: number;
+  githubProfileUrl: number;
+  slashdot: number;
+  hackernews: number;
+  freshrss: number;
+  stockQuotes: number;
+}
+
+// Shared with the renderer so a settings.json missing some (or all) of
+// these keys - including a first run with no file at all - still gets a
+// sane refresh cadence for every module.
+export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
+  githubRepos: 5,
+  githubNotifications: 1,
+  githubProfileUrl: 60,
+  slashdot: 15,
+  hackernews: 15,
+  freshrss: 5,
+  stockQuotes: 5,
+};
+
 export interface AppSettings {
   rememberActiveTab: boolean;
   lockLayout: boolean;
+  refreshIntervalsMinutes: RefreshIntervalsMinutes;
 }
 
 // Keyed by module instance id, so each Notes module instance keeps its own
