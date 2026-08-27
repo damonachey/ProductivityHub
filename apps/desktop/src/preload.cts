@@ -39,6 +39,9 @@ contextBridge.exposeInMainWorld("api", {
   getSettings: (): Promise<AppSettings> => ipcRenderer.invoke("config:get-settings"),
   saveSettings: (settings: AppSettings): Promise<void> =>
     ipcRenderer.invoke("config:save-settings", settings),
+  exportConfig: (): Promise<{ ok: boolean; filePath?: string; error?: string }> =>
+    ipcRenderer.invoke("config:export"),
+  importConfig: (): Promise<{ ok: boolean; error?: string }> => ipcRenderer.invoke("config:import"),
   getNotes: (): Promise<NotesState> => ipcRenderer.invoke("notes:get"),
   saveNote: (moduleId: string, text: string): Promise<void> =>
     ipcRenderer.invoke("notes:save", moduleId, text),

@@ -273,6 +273,24 @@ export function TabBar({
                   />
                   Remember active tab
                 </label>
+                <button
+                  className="settings-popup-action"
+                  onClick={async () => {
+                    const result = await window.api.exportConfig();
+                    if (!result.ok && result.error) window.alert(result.error);
+                  }}
+                >
+                  Export configuration…
+                </button>
+                <button
+                  className="settings-popup-action"
+                  onClick={async () => {
+                    const result = await window.api.importConfig();
+                    if (!result.ok && result.error) window.alert(result.error);
+                  }}
+                >
+                  Import configuration…
+                </button>
               </div>
             </>
           )}

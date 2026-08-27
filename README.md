@@ -4,7 +4,7 @@ Electron desktop app and `ph` CLI for productivity tools: GitHub, Gmail, Google 
 
 ## Usage
 
-All config lives in one place, outside the repo: `~/.productivityhub/` (works the same whether you're running from source or a distributed portable exe, which has no "repo" on disk). Create `~/.productivityhub/config.json` with whichever of these your modules need:
+All config lives in one place, outside the repo: `~/.productivityhub/` (works the same whether you're running from source or a distributed portable exe, which has no "repo" on disk). Create `~/.productivityhub/secrets.json` with whichever of these your modules need:
 
 ```json
 {
@@ -22,7 +22,7 @@ All config lives in one place, outside the repo: `~/.productivityhub/` (works th
 - `FRESHRSS_URL` / `FRESHRSS_USER` / `FRESHRSS_API_PASSWORD` — FreshRSS module (needs FreshRSS's API password, not your regular login password).
 - Stock Quotes/Chart (Yahoo Finance), Weather (Open-Meteo), Slashdot, and Hacker News need no config at all — no account, no API key.
 
-`packages/core`'s `requireEnv()` reads from this file (an actual environment variable of the same name still takes precedence, e.g. `GITHUB_TOKEN=... ph gh repos`, useful for CI or one-off overrides).
+`packages/core`'s `requireEnv()` reads from this file (an actual environment variable of the same name still takes precedence, e.g. `GITHUB_TOKEN=... ph gh repos`, useful for CI or one-off overrides). OAuth tokens for Gmail, Google Tasks, and Google Calendar are also stored in `secrets.json`, written automatically the first time you connect each one from the desktop app.
 
 ```
 ph gh repos
@@ -32,15 +32,17 @@ Lists your GitHub repos, most recently updated first. This is the only CLI comma
 
 The desktop app (`.\phdesktop.cmd` — see [Building from source](#building-from-source) if it's not built yet) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. A module's card title can be renamed per-instance (useful when you have several of the same module, e.g. Weather for different cities).
 
+Quick Settings (the ⚙ icon, top right, or Ctrl+,) also has **Export configuration…** / **Import configuration…** — export writes your entire workspace layout and every module's data (notes, bookmarks, RSS feeds, etc.) to a single JSON file; import reads one back in and reloads the app. Secrets and OAuth tokens are never included, so after importing on a new machine you'll need to re-create `secrets.json` and reconnect Gmail/Tasks/Calendar.
+
 ### Where things are stored
 
 | What | Where |
 | --- | --- |
-| Secrets (`GITHUB_TOKEN`, etc.) | `~/.productivityhub/config.json` |
-| Desktop workspace/module layout | `~/.productivityhub/workspaces.json` |
+| Secrets (`GITHUB_TOKEN`, OAuth tokens, etc.) | `~/.productivityhub/secrets.json` |
+| Everything else (workspace/module layout, app settings, per-module data) | `~/.productivityhub/settings.json` |
 | Desktop window size/position | `%APPDATA%\@productivityhub\desktop\window-state.json` (Electron-chrome-specific, kept separate) |
 
-The first two are shared by both the CLI and the desktop app and owned by `packages/core` / the desktop main process respectively; window state is Electron-only so it stays in Electron's own per-app userData dir.
+The first two are shared by both the CLI and the desktop app and owned by `packages/core` / the desktop main process respectively; window state is Electron-only so it stays in Electron's own per-app userData dir. This is a breaking change from the older per-file layout (`config.json`, `workspaces.json`, and a dozen other per-module files) — there's no automatic migration, so an existing install needs to move to the new files by hand (or just reconfigure from scratch).
 
 ## Layout
 

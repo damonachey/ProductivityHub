@@ -158,6 +158,28 @@ body {
   margin-top: 6px;
 }
 
+.settings-popup-action {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #e4e4e7;
+  font-size: 13px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.settings-popup-action:hover {
+  color: #fff;
+}
+
+.settings-checkbox + .settings-popup-action {
+  margin-top: 8px;
+  border-top: 1px solid #3f3f46;
+  padding-top: 10px;
+}
+
 .tab-search-input {
   width: 160px;
   background: #1e1f22;

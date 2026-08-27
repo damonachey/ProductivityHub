@@ -1,7 +1,11 @@
 import http from "node:http";
-import fs from "node:fs";
-import path from "node:path";
-import { CONFIG_DIR, requireEnv } from "@productivityhub/core";
+import {
+  requireEnv,
+  getServiceTokens,
+  saveServiceTokens,
+  deleteServiceTokens,
+  type OAuthTokens,
+} from "@productivityhub/core";
 
 const AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
@@ -9,13 +13,7 @@ const TASKS_API_BASE = "https://tasks.googleapis.com/tasks/v1/lists/@default/tas
 const SCOPE = "https://www.googleapis.com/auth/tasks";
 const AUTH_TIMEOUT_MS = 5 * 60 * 1000;
 
-const TOKENS_FILE = path.join(CONFIG_DIR, "google-tasks-tokens.json");
-
-interface StoredTokens {
-  refreshToken: string;
-  accessToken: string;
-  expiresAt: number;
-}
+const TOKEN_SECTION = "googleTasksTokens";
 
 function getClientCredentials(): { clientId: string; clientSecret: string } {
   return {
@@ -24,17 +22,12 @@ function getClientCredentials(): { clientId: string; clientSecret: string } {
   };
 }
 
-function readTokens(): StoredTokens | null {
-  try {
-    return JSON.parse(fs.readFileSync(TOKENS_FILE, "utf-8")) as StoredTokens;
-  } catch {
-    return null;
-  }
+function readTokens(): OAuthTokens | null {
+  return getServiceTokens(TOKEN_SECTION);
 }
 
-function saveTokens(tokens: StoredTokens): void {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(TOKENS_FILE, JSON.stringify(tokens, null, 2));
+function saveTokens(tokens: OAuthTokens): void {
+  saveServiceTokens(TOKEN_SECTION, tokens);
 }
 
 export function isAuthenticated(): boolean {
@@ -42,11 +35,7 @@ export function isAuthenticated(): boolean {
 }
 
 export function disconnect(): void {
-  try {
-    fs.unlinkSync(TOKENS_FILE);
-  } catch {
-    // already disconnected
-  }
+  deleteServiceTokens(TOKEN_SECTION);
 }
 
 // Same "installed app" OAuth loopback flow as @productivityhub/google-mail,
@@ -159,7 +148,7 @@ async function getAccessToken(): Promise<string> {
     throw new Error(`Token refresh failed: HTTP ${response.status}`);
   }
   const data = (await response.json()) as { access_token: string; expires_in: number };
-  const updated: StoredTokens = {
+  const updated: OAuthTokens = {
     refreshToken: tokens.refreshToken,
     accessToken: data.access_token,
     expiresAt: Date.now() + data.expires_in * 1000,

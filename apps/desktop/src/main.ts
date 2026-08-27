@@ -1,10 +1,7 @@
-import { app, BrowserWindow, ipcMain, shell, WebContentsView } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, shell, WebContentsView } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
-import { randomUUID } from "node:crypto";
-import windowStateKeeper from "electron-window-state";
-import { CONFIG_DIR } from "@productivityhub/core";
 import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityhub/github";
 import { getHeadlines } from "@productivityhub/slashdot";
 import { getTopStories } from "@productivityhub/hackernews";
@@ -39,37 +36,43 @@ import {
   listEventsInRange as listGoogleCalendarEventsInRange,
 } from "@productivityhub/google-calendar";
 import { getForecast as getWeatherForecast } from "@productivityhub/open-meteo";
+import windowStateKeeper from "electron-window-state";
+import {
+  getWorkspaceState,
+  saveWorkspaceState,
+  getSettings,
+  saveSettings,
+  getNotes,
+  saveNote,
+  getBookmarks,
+  saveBookmarks,
+  getStocks,
+  saveStocks,
+  getStockCharts,
+  saveStockChartSymbol,
+  getGoogleTasksFilters,
+  saveGoogleTasksFilters,
+  getWeatherLocations,
+  saveWeatherLocation,
+  getRssSettings,
+  saveRssSettings,
+  getWebPages,
+  saveWebPages,
+  saveWebPageUrl,
+  readState,
+  writeState,
+  validateAndNormalizeImportedState,
+} from "./settings.js";
 import type {
   AppSettings,
   BookmarkItem,
-  BookmarksState,
-  GoogleTasksFiltersState,
-  NotesState,
   Rect,
   RssModuleSettings,
-  RssState,
-  StockChartsState,
   StockItem,
-  StocksState,
-  WeatherLocationsState,
-  WebPagesState,
   WorkspaceState,
 } from "./types.js";
-import { DEFAULT_REFRESH_INTERVALS_MINUTES } from "./types.js";
 
 const dirname = path.dirname(url.fileURLToPath(import.meta.url));
-const WORKSPACES_FILE = path.join(CONFIG_DIR, "workspaces.json");
-const SETTINGS_FILE = path.join(CONFIG_DIR, "settings.json");
-const NOTES_FILE = path.join(CONFIG_DIR, "notes.json");
-const BOOKMARKS_FILE = path.join(CONFIG_DIR, "bookmarks.json");
-const WEBPAGES_FILE = path.join(CONFIG_DIR, "webpages.json");
-const STOCKS_FILE = path.join(CONFIG_DIR, "stocks.json");
-const STOCK_CHARTS_FILE = path.join(CONFIG_DIR, "stock-charts.json");
-const GOOGLE_TASKS_FILTERS_FILE = path.join(CONFIG_DIR, "google-tasks-filters.json");
-const WEATHER_LOCATIONS_FILE = path.join(CONFIG_DIR, "weather-locations.json");
-const RSS_FILE = path.join(CONFIG_DIR, "rss.json");
-
-const DEFAULT_RSS_SETTINGS: RssModuleSettings = { feeds: [], maxItems: 30, maxAgeDays: 14 };
 
 let mainWindow: BrowserWindow | null = null;
 const webPageViews = new Map<string, WebContentsView>();
@@ -78,270 +81,6 @@ function normalizeUrl(raw: string): string {
   const trimmed = raw.trim();
   if (!trimmed) return trimmed;
   return /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-}
-
-const DEFAULT_SETTINGS: AppSettings = {
-  rememberActiveTab: true,
-  lockLayout: false,
-  refreshIntervalsMinutes: DEFAULT_REFRESH_INTERVALS_MINUTES,
-};
-
-// First run only (workspaces.json genuinely doesn't exist yet - not just
-// unreadable/corrupt) - seeds a starter 3-tab layout, along with the
-// companion per-module-instance files those modules read their own state
-// from, so it shows real configured content immediately rather than empty
-// "set a location"/"add a bookmark" placeholders.
-function buildDefaultWorkspaceState(): WorkspaceState {
-  const weatherModuleId = randomUUID();
-  const bookmarksModuleId = randomUUID();
-  const notesModuleId = randomUUID();
-  const hackernewsModuleId = randomUUID();
-  const slashdotModuleId = randomUUID();
-  const stockQuotesModuleId = randomUUID();
-  const stockChartSpyModuleId = randomUUID();
-  const stockChartQqqModuleId = randomUUID();
-
-  saveWeatherLocation(weatherModuleId, "Denver, CO");
-  saveBookmarks(bookmarksModuleId, [
-    {
-      id: randomUUID(),
-      url: "https://github.com/damonachey/ProductivityHub",
-      title: "ProductivityHub on GitHub",
-    },
-    { id: randomUUID(), url: "https://achey.net", title: "achey.net" },
-  ]);
-  saveNote(
-    notesModuleId,
-    [
-      "Locking/unlocking the layout:",
-      "Open Quick Settings (the ⚙ icon, top right, or Ctrl+,) and toggle \"Lock layout\".",
-      "",
-      "Unlocked: drag modules to reorder them, remove or rename a module's title, and use \"+ Add module\" to add new ones.",
-      "Locked: the layout stays fixed - routine actions (marking mail read, completing tasks, etc) still work.",
-    ].join("\n"),
-  );
-  saveStocks(
-    stockQuotesModuleId,
-    ["SPY", "QQQ", "AAPL", "AMZN", "MSFT", "GOOG", "NVDA"].map((symbol) => ({
-      id: randomUUID(),
-      symbol,
-    })),
-  );
-  saveStockChartSymbol(stockChartSpyModuleId, "SPY");
-  saveStockChartSymbol(stockChartQqqModuleId, "QQQ");
-
-  const homeId = randomUUID();
-
-  return {
-    activeId: homeId,
-    workspaces: [
-      {
-        id: homeId,
-        name: "Home",
-        modules: [
-          { id: weatherModuleId, type: "weather" },
-          { id: bookmarksModuleId, type: "bookmarks" },
-          { id: notesModuleId, type: "notes" },
-        ],
-      },
-      {
-        id: randomUUID(),
-        name: "News",
-        modules: [
-          { id: hackernewsModuleId, type: "hackernews" },
-          { id: slashdotModuleId, type: "slashdot" },
-        ],
-      },
-      {
-        id: randomUUID(),
-        name: "Markets",
-        modules: [
-          { id: stockQuotesModuleId, type: "stock-quotes" },
-          { id: stockChartSpyModuleId, type: "stock-chart" },
-          { id: stockChartQqqModuleId, type: "stock-chart" },
-        ],
-      },
-    ],
-  };
-}
-
-function getWorkspaceState(): WorkspaceState {
-  let raw: string;
-  try {
-    raw = fs.readFileSync(WORKSPACES_FILE, "utf-8");
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "ENOENT") {
-      return { activeId: "", workspaces: [] };
-    }
-    const defaultState = buildDefaultWorkspaceState();
-    saveWorkspaceState(defaultState);
-    return defaultState;
-  }
-
-  try {
-    const parsed = JSON.parse(raw);
-    // Back-compat: older files stored a plain Workspace[] with no activeId.
-    if (Array.isArray(parsed)) {
-      return { activeId: parsed[0]?.id ?? "", workspaces: parsed };
-    }
-    return parsed as WorkspaceState;
-  } catch {
-    return { activeId: "", workspaces: [] };
-  }
-}
-
-function saveWorkspaceState(state: WorkspaceState): void {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(WORKSPACES_FILE, JSON.stringify(state, null, 2));
-}
-
-function getSettings(): AppSettings {
-  try {
-    const stored = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf-8")) as Partial<AppSettings>;
-    return {
-      ...DEFAULT_SETTINGS,
-      ...stored,
-      refreshIntervalsMinutes: {
-        ...DEFAULT_REFRESH_INTERVALS_MINUTES,
-        ...stored.refreshIntervalsMinutes,
-      },
-    };
-  } catch {
-    return DEFAULT_SETTINGS;
-  }
-}
-
-function saveSettings(settings: AppSettings): void {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
-}
-
-function getNotes(): NotesState {
-  try {
-    return JSON.parse(fs.readFileSync(NOTES_FILE, "utf-8")) as NotesState;
-  } catch {
-    return {};
-  }
-}
-
-function saveNote(moduleId: string, text: string): void {
-  const notes = getNotes();
-  notes[moduleId] = text;
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(NOTES_FILE, JSON.stringify(notes, null, 2));
-}
-
-function getBookmarks(): BookmarksState {
-  try {
-    return JSON.parse(fs.readFileSync(BOOKMARKS_FILE, "utf-8")) as BookmarksState;
-  } catch {
-    return {};
-  }
-}
-
-function saveBookmarks(moduleId: string, items: BookmarkItem[]): void {
-  const bookmarks = getBookmarks();
-  bookmarks[moduleId] = items;
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(BOOKMARKS_FILE, JSON.stringify(bookmarks, null, 2));
-}
-
-function getStocks(): StocksState {
-  try {
-    return JSON.parse(fs.readFileSync(STOCKS_FILE, "utf-8")) as StocksState;
-  } catch {
-    return {};
-  }
-}
-
-function saveStocks(moduleId: string, items: StockItem[]): void {
-  const stocks = getStocks();
-  stocks[moduleId] = items;
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(STOCKS_FILE, JSON.stringify(stocks, null, 2));
-}
-
-function getStockCharts(): StockChartsState {
-  try {
-    return JSON.parse(fs.readFileSync(STOCK_CHARTS_FILE, "utf-8")) as StockChartsState;
-  } catch {
-    return {};
-  }
-}
-
-function saveStockChartSymbol(moduleId: string, symbol: string): void {
-  const charts = getStockCharts();
-  charts[moduleId] = symbol;
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(STOCK_CHARTS_FILE, JSON.stringify(charts, null, 2));
-}
-
-function getGoogleTasksFilters(): GoogleTasksFiltersState {
-  try {
-    return JSON.parse(fs.readFileSync(GOOGLE_TASKS_FILTERS_FILE, "utf-8")) as GoogleTasksFiltersState;
-  } catch {
-    return {};
-  }
-}
-
-function saveGoogleTasksFilters(moduleId: string, filters: string[]): void {
-  const all = getGoogleTasksFilters();
-  all[moduleId] = filters;
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(GOOGLE_TASKS_FILTERS_FILE, JSON.stringify(all, null, 2));
-}
-
-function getWeatherLocations(): WeatherLocationsState {
-  try {
-    return JSON.parse(fs.readFileSync(WEATHER_LOCATIONS_FILE, "utf-8")) as WeatherLocationsState;
-  } catch {
-    return {};
-  }
-}
-
-function saveWeatherLocation(moduleId: string, location: string): void {
-  const all = getWeatherLocations();
-  all[moduleId] = location;
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(WEATHER_LOCATIONS_FILE, JSON.stringify(all, null, 2));
-}
-
-function getRssState(): RssState {
-  try {
-    return JSON.parse(fs.readFileSync(RSS_FILE, "utf-8")) as RssState;
-  } catch {
-    return {};
-  }
-}
-
-function getRssSettings(moduleId: string): RssModuleSettings {
-  return getRssState()[moduleId] ?? DEFAULT_RSS_SETTINGS;
-}
-
-function saveRssSettings(moduleId: string, settings: RssModuleSettings): void {
-  const all = getRssState();
-  all[moduleId] = settings;
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(RSS_FILE, JSON.stringify(all, null, 2));
-}
-
-function getWebPages(): WebPagesState {
-  try {
-    return JSON.parse(fs.readFileSync(WEBPAGES_FILE, "utf-8")) as WebPagesState;
-  } catch {
-    return {};
-  }
-}
-
-function saveWebPages(pages: WebPagesState): void {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true });
-  fs.writeFileSync(WEBPAGES_FILE, JSON.stringify(pages, null, 2));
-}
-
-function saveWebPageUrl(moduleId: string, pageUrl: string): void {
-  const pages = getWebPages();
-  pages[moduleId] = pageUrl;
-  saveWebPages(pages);
 }
 
 // The view is created once per module instance and kept alive across
@@ -485,6 +224,41 @@ ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) => {
 });
 ipcMain.handle("config:get-settings", () => getSettings());
 ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => saveSettings(settings));
+ipcMain.handle("config:export", async (): Promise<{ ok: boolean; filePath?: string; error?: string }> => {
+  if (!mainWindow) return { ok: false, error: "No window available" };
+  const result = await dialog.showSaveDialog(mainWindow, {
+    title: "Export configuration",
+    defaultPath: "productivityhub-config.json",
+    filters: [{ name: "JSON", extensions: ["json"] }],
+  });
+  if (result.canceled || !result.filePath) return { ok: false };
+  fs.writeFileSync(result.filePath, JSON.stringify(readState(), null, 2));
+  return { ok: true, filePath: result.filePath };
+});
+ipcMain.handle("config:import", async (): Promise<{ ok: boolean; error?: string }> => {
+  if (!mainWindow) return { ok: false, error: "No window available" };
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: "Import configuration",
+    properties: ["openFile"],
+    filters: [{ name: "JSON", extensions: ["json"] }],
+  });
+  if (result.canceled || result.filePaths.length === 0) return { ok: false };
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(fs.readFileSync(result.filePaths[0], "utf-8"));
+  } catch {
+    return { ok: false, error: "File is not valid JSON." };
+  }
+
+  const validated = validateAndNormalizeImportedState(parsed);
+  if (!validated.ok) return { ok: false, error: validated.error };
+
+  writeState(validated.state);
+  reconcileWebPageViews(validated.state.workspaces);
+  mainWindow.webContents.reload();
+  return { ok: true };
+});
 ipcMain.handle("notes:get", () => getNotes());
 ipcMain.handle("notes:save", (_event, moduleId: string, text: string) => saveNote(moduleId, text));
 ipcMain.handle("bookmarks:get", () => getBookmarks());

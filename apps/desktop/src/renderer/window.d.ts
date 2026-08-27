@@ -35,6 +35,8 @@ declare global {
       saveWorkspaces: (state: WorkspaceState) => Promise<void>;
       getSettings: () => Promise<AppSettings>;
       saveSettings: (settings: AppSettings) => Promise<void>;
+      exportConfig: () => Promise<{ ok: boolean; filePath?: string; error?: string }>;
+      importConfig: () => Promise<{ ok: boolean; error?: string }>;
       getNotes: () => Promise<NotesState>;
       saveNote: (moduleId: string, text: string) => Promise<void>;
       getBookmarks: () => Promise<BookmarksState>;
