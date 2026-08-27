@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { RefreshIntervalsMinutes, Workspace } from "../types";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { MODULE_REGISTRY, getModuleDefinition } from "./modules/registry";
 import { useCachedData } from "./useCachedData";
 
@@ -54,6 +55,9 @@ export function WorkspaceView({
   const [searchQuery, setSearchQuery] = useState("");
   const [draggedModuleId, setDraggedModuleId] = useState<string | null>(null);
   const [dragOverModuleId, setDragOverModuleId] = useState<string | null>(null);
+  const [removeCandidate, setRemoveCandidate] = useState<{ id: string; title: string } | null>(
+    null,
+  );
   const { data: githubProfileUrl } = useCachedData<string>(
     GITHUB_PROFILE_CACHE_KEY,
     refreshIntervalsMinutes.githubProfileUrl * 60_000,
@@ -117,7 +121,9 @@ export function WorkspaceView({
                 {!lockLayout && (
                   <button
                     aria-label={`Remove ${definition.title}`}
-                    onClick={() => onRemoveModule(moduleInstance.id)}
+                    onClick={() =>
+                      setRemoveCandidate({ id: moduleInstance.id, title: definition.title })
+                    }
                   >
                     ×
                   </button>
@@ -178,6 +184,18 @@ export function WorkspaceView({
           </div>
         )}
       </div>
+
+      {removeCandidate && (
+        <ConfirmDialog
+          message={`Remove the "${removeCandidate.title}" module?`}
+          confirmLabel="Remove"
+          onConfirm={() => {
+            onRemoveModule(removeCandidate.id);
+            setRemoveCandidate(null);
+          }}
+          onCancel={() => setRemoveCandidate(null)}
+        />
+      )}
     </div>
   );
 }

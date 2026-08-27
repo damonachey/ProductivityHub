@@ -1133,3 +1133,61 @@ body {
 .gtask-add-button:hover {
   color: #fff;
 }
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.confirm-dialog {
+  background: #26272b;
+  border: 1px solid #2a2b2e;
+  border-radius: 8px;
+  padding: 16px 20px;
+  max-width: 320px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.confirm-message {
+  margin: 0 0 16px;
+  color: #e4e4e7;
+  font-size: 14px;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm-actions button {
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.confirm-cancel {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+}
+
+.confirm-cancel:hover {
+  background: #2a2b2e;
+}
+
+.confirm-delete {
+  background: #7f1d1d;
+  border: 1px solid #991b1b;
+  color: #fff;
+}
+
+.confirm-delete:hover {
+  background: #991b1b;
+}

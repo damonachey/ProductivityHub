@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Workspace } from "../types";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 interface Props {
   workspaces: Workspace[];
@@ -33,6 +34,7 @@ export function TabBar({
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [removeCandidate, setRemoveCandidate] = useState<Workspace | null>(null);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent): void {
@@ -106,6 +108,7 @@ export function TabBar({
               value={draftName}
               onChange={(event) => setDraftName(event.target.value)}
               onClick={(event) => event.stopPropagation()}
+              onFocus={(event) => event.target.select()}
               onBlur={commitEditing}
               onKeyDown={(event) => {
                 if (event.key === "Enter") commitEditing();
@@ -128,7 +131,7 @@ export function TabBar({
               aria-label={`Close ${workspace.name}`}
               onClick={(event) => {
                 event.stopPropagation();
-                onRemove(workspace.id);
+                setRemoveCandidate(workspace);
               }}
             >
               ×
@@ -179,6 +182,18 @@ export function TabBar({
           </>
         )}
       </div>
+
+      {removeCandidate && (
+        <ConfirmDialog
+          message={`Close the "${removeCandidate.name}" tab and all its modules?`}
+          confirmLabel="Remove"
+          onConfirm={() => {
+            onRemove(removeCandidate.id);
+            setRemoveCandidate(null);
+          }}
+          onCancel={() => setRemoveCandidate(null)}
+        />
+      )}
     </div>
   );
 }
