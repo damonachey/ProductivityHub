@@ -48,14 +48,14 @@ export function BookmarksModule({ moduleId, lockLayout }: ModuleProps) {
 
   function startAdd(): void {
     if (lockLayout) return;
-    setNewUrl("");
+    setNewUrl("https://");
     setNewTitle("");
     setAddingOpen(true);
   }
 
   function commitAdd(): void {
     const url = normalizeUrl(newUrl);
-    if (!url || !items) {
+    if (!url || /^[a-z][a-z0-9+.-]*:\/\/$/i.test(url) || !items) {
       setAddingOpen(false);
       return;
     }
@@ -220,6 +220,10 @@ export function BookmarksModule({ moduleId, lockLayout }: ModuleProps) {
               placeholder="URL"
               value={newUrl}
               onChange={(event) => setNewUrl(event.target.value)}
+              onFocus={(event) => {
+                const { value } = event.target;
+                event.target.setSelectionRange(value.length, value.length);
+              }}
               onKeyDown={(event) => {
                 if (event.key === "Enter") commitAdd();
                 if (event.key === "Escape") setAddingOpen(false);
