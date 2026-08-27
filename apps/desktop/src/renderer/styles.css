@@ -714,11 +714,6 @@ body {
   color: #fff;
 }
 
-.module-card:has(.stock-chart-module) {
-  max-width: 640px;
-  flex-basis: 560px;
-}
-
 .stock-chart-module {
   display: flex;
   flex-direction: column;
