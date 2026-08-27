@@ -38,7 +38,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   hackernews: 15,
   freshrss: 5,
   stockQuotes: 5,
-  stockChart: 15,
+  stockChart: 5,
   gmailInbox: 1,
   googleTasks: 5,
 };
