@@ -744,6 +744,13 @@ body {
   background: #2a2b2e;
 }
 
+.stock-chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .stock-chart-symbol {
   font-weight: 600;
   font-size: 15px;

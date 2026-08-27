@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Candle } from "@productivityhub/yahoo-finance";
+import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
 import { getCached, setCached } from "../cache";
 import type { ModuleProps } from "./types";
 
@@ -9,6 +9,24 @@ const PADDING = 8;
 
 function chartCacheKey(symbol: string): string {
   return `stock-chart-${symbol}`;
+}
+
+function quoteCacheKey(symbol: string): string {
+  return `stock-chart-quote-${symbol}`;
+}
+
+function formatPrice(quote: StockQuote): string {
+  if (quote.price == null) return "—";
+  return quote.price.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function formatChange(quote: StockQuote): string {
+  if (quote.change == null || quote.changePercent == null) return "";
+  const sign = quote.change >= 0 ? "+" : "";
+  return `${sign}${quote.change.toFixed(2)} (${sign}${quote.changePercent.toFixed(2)}%)`;
 }
 
 function CandlestickChart({ candles }: { candles: Candle[] }) {
@@ -58,6 +76,7 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
   const [draftSymbol, setDraftSymbol] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [candles, setCandles] = useState<Candle[] | null>(null);
+  const [quote, setQuote] = useState<StockQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,6 +84,7 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
       setSymbol(saved);
       setDraftSymbol(saved);
       setCandles(saved ? (getCached<Candle[]>(chartCacheKey(saved)) ?? null) : null);
+      setQuote(saved ? (getCached<StockQuote>(quoteCacheKey(saved)) ?? null) : null);
       setLoaded(true);
     });
   }, [moduleId]);
@@ -78,7 +98,7 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
 
     let cancelled = false;
 
-    function fetchCandles(): void {
+    function fetchData(): void {
       window.api
         .getStockCandles(symbol)
         .then((result) => {
@@ -91,10 +111,16 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
           if (cancelled) return;
           setError(err instanceof Error ? err.message : String(err));
         });
+
+      window.api.getStockQuotes([symbol]).then(([result]) => {
+        if (cancelled || !result) return;
+        setQuote(result);
+        setCached(quoteCacheKey(symbol), result, refreshIntervalMs);
+      });
     }
 
-    fetchCandles();
-    const interval = setInterval(fetchCandles, refreshIntervalMs);
+    fetchData();
+    const interval = setInterval(fetchData, refreshIntervalMs);
     return () => {
       cancelled = true;
       clearInterval(interval);
@@ -106,6 +132,7 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
     if (!normalized) return;
     setSymbol(normalized);
     setCandles(getCached<Candle[]>(chartCacheKey(normalized)) ?? null);
+    setQuote(getCached<StockQuote>(quoteCacheKey(normalized)) ?? null);
     setError(null);
     window.api.saveStockChartSymbol(moduleId, normalized);
   }
@@ -135,14 +162,39 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
         <p className="module-placeholder">Enter a ticker symbol above.</p>
       ) : (
         <>
-          <a
-            className="stock-chart-symbol"
-            href={`https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {symbol}
-          </a>
+          <div className="stock-chart-header">
+            <div className="stock-info">
+              <a
+                className="stock-chart-symbol"
+                href={`https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {symbol}
+              </a>
+              {quote?.name && <span className="stock-name">{quote.name}</span>}
+            </div>
+            <div className="stock-quote">
+              {quote?.error ? (
+                <span className="module-error">{quote.error}</span>
+              ) : quote ? (
+                <>
+                  <span className="stock-price">{formatPrice(quote)}</span>
+                  <span
+                    className={
+                      quote.change != null && quote.change >= 0
+                        ? "stock-change-up"
+                        : "stock-change-down"
+                    }
+                  >
+                    {formatChange(quote)}
+                  </span>
+                </>
+              ) : (
+                <span className="module-placeholder">…</span>
+              )}
+            </div>
+          </div>
           {error ? (
             <p className="module-error">Error: {error}</p>
           ) : candles && candles.length > 0 ? (
