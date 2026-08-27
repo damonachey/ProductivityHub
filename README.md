@@ -1,16 +1,26 @@
 # ProductivityHub
 
-Electron desktop app and `ph` CLI for productivity tools, starting with Gmail, Google Tasks, Google Calendar, and GitHub — with more integrations planned.
+Electron desktop app and `ph` CLI for productivity tools: GitHub, Gmail, Google Tasks, Google Calendar (list and month-grid views), Weather, FreshRSS, Slashdot, Hacker News, and stock quotes/charts, plus simple utility modules (Bookmarks, Notes, embedded Web Page). All are wired to real data in the desktop app.
 
 ## Usage
 
-All config lives in one place, outside the repo: `~/.productivityhub/` (works the same whether you're running from source or a distributed portable exe, which has no "repo" on disk). Create `~/.productivityhub/config.json`:
+All config lives in one place, outside the repo: `~/.productivityhub/` (works the same whether you're running from source or a distributed portable exe, which has no "repo" on disk). Create `~/.productivityhub/config.json` with whichever of these your modules need:
 
 ```json
 {
-  "GITHUB_TOKEN": "<a personal access token>"
+  "GITHUB_TOKEN": "<a personal access token>",
+  "GOOGLE_CLIENT_ID": "<OAuth client id>",
+  "GOOGLE_CLIENT_SECRET": "<OAuth client secret>",
+  "FRESHRSS_URL": "<your FreshRSS instance URL>",
+  "FRESHRSS_USER": "<FreshRSS username>",
+  "FRESHRSS_API_PASSWORD": "<FreshRSS API password>"
 }
 ```
+
+- `GITHUB_TOKEN` — GitHub Repos / Notifications modules.
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — a single Google Cloud OAuth client shared by Gmail, Google Tasks, and Google Calendar. Each still goes through its own consent screen and keeps its own token file, since they're separate scopes/grants.
+- `FRESHRSS_URL` / `FRESHRSS_USER` / `FRESHRSS_API_PASSWORD` — FreshRSS module (needs FreshRSS's API password, not your regular login password).
+- Stock Quotes/Chart (Yahoo Finance), Weather (Open-Meteo), Slashdot, and Hacker News need no config at all — no account, no API key.
 
 `packages/core`'s `requireEnv()` reads from this file (an actual environment variable of the same name still takes precedence, e.g. `GITHUB_TOKEN=... ph gh repos`, useful for CI or one-off overrides).
 
@@ -18,9 +28,9 @@ All config lives in one place, outside the repo: `~/.productivityhub/` (works th
 ph gh repos
 ```
 
-Lists your GitHub repos, most recently updated first. This is the first working integration; the others are still scaffolding.
+Lists your GitHub repos, most recently updated first. This is the only CLI command implemented so far — everything else so far is desktop-app-only.
 
-The desktop app (`.\phdesktop.cmd`, or `pnpm --filter @productivityhub/desktop build && pnpm --filter @productivityhub/desktop start`) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. Only the GitHub Repos module is wired to real data so far; Gmail/Tasks/Calendar modules are placeholders.
+The desktop app (`.\phdesktop.cmd`, or `pnpm --filter @productivityhub/desktop build && pnpm --filter @productivityhub/desktop start`) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. A module's card title can be renamed per-instance (useful when you have several of the same module, e.g. Weather for different cities).
 
 ### Where things are stored
 
@@ -41,15 +51,18 @@ apps/
 packages/
   core/               Shared auth/config/logging used by all apps and services
   services/
+    github/           GitHub API wrapper
     google-mail/      Gmail API wrapper
-    google-tasks/      Google Tasks API wrapper
-    google-calendar/   Google Calendar API wrapper
-    github/            GitHub API wrapper
+    google-tasks/     Google Tasks API wrapper
+    google-calendar/  Google Calendar API wrapper (list view and month-grid view)
+    open-meteo/       Weather forecast + geocoding (Open-Meteo, free/keyless)
+    yahoo-finance/    Stock quotes/candles
+    freshrss/         FreshRSS unread items
+    slashdot/         Slashdot headlines
+    hackernews/       Hacker News top stories
 ```
 
-`apps/` holds runnable programs; `packages/` holds shared logic with no entry point of its own. Both apps consume the same `packages/services/*` packages so integration logic is written once.
-
-This is being built incrementally — the service packages are still empty scaffolds, with real integrations landing in later commits.
+`apps/` holds runnable programs; `packages/` holds shared logic with no entry point of its own. The desktop app consumes all of the `packages/services/*` packages above; the CLI so far only consumes `github` (see Usage).
 
 ## Building portable executables
 
