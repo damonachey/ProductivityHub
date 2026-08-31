@@ -32,7 +32,7 @@ Lists your GitHub repos, most recently updated first. This is the only CLI comma
 
 The desktop app (`.\phdesktop.cmd` — see [Building from source](#building-from-source) if it's not built yet) is a dashboard: tabs across the top are workspaces (add/rename/close), and each workspace holds a grid of modules you add from a picker. A module's card title can be renamed per-instance (useful when you have several of the same module, e.g. Weather for different cities).
 
-Quick Settings (the ⚙ icon, top right, or Ctrl+,) also has **Export configuration…** / **Import configuration…** — export writes your entire workspace layout and every module's data (notes, bookmarks, RSS feeds, etc.) to a single JSON file; import reads one back in and reloads the app. Secrets and OAuth tokens are never included, so after importing on a new machine you'll need to re-create `secrets.json` and reconnect Gmail/Tasks/Calendar.
+Settings (the ⚙ icon, top right, or Ctrl+,) also has **Export configuration…** / **Import configuration…** — export writes your entire workspace layout and every module's data (notes, bookmarks, RSS feeds, etc.) to a single JSON file; import reads one back in and reloads the app. Secrets and OAuth tokens are never included, so after importing on a new machine you'll need to re-create `secrets.json` and reconnect Gmail/Tasks/Calendar.
 
 ### Where things are stored
 

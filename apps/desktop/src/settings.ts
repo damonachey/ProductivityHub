@@ -107,7 +107,7 @@ function buildDefaultStateFile(): StateFile {
   ];
   state.notes[notesModuleId] = [
     "Locking/unlocking the layout:",
-    "Open Quick Settings (the ⚙ icon, top right, or Ctrl+,) and toggle \"Lock layout\".",
+    "Open Settings (the ⚙ icon, top right, or Ctrl+,) and toggle \"Lock layout\".",
     "",
     "Unlocked: drag modules to reorder them, remove or rename a module's title, and use \"+ Add module\" to add new ones.",
     "Locked: the layout stays fixed - routine actions (marking mail read, completing tasks, etc) still work.",

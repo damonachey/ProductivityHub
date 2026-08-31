@@ -284,8 +284,8 @@ export function TabBar({
         <div className="tab-settings-wrapper">
           <button
             className="tab-settings-button"
-            aria-label="Quick Settings"
-            title="Quick Settings (Ctrl+,)"
+            aria-label="Settings"
+            title="Settings (Ctrl+,)"
             onClick={() => setSettingsOpen((open) => !open)}
           >
             ⚙
@@ -294,7 +294,7 @@ export function TabBar({
             <>
               <div className="popup-backdrop" onClick={() => setSettingsOpen(false)} />
               <div className="settings-popup">
-                <div className="settings-popup-title">Quick Settings</div>
+                <div className="settings-popup-title">Settings</div>
                 <label className="settings-checkbox" title="Ctrl+L">
                   <input
                     type="checkbox"
