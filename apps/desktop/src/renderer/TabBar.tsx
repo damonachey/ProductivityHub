@@ -280,7 +280,7 @@ export function TabBar({
                     if (!result.ok && result.error) window.alert(result.error);
                   }}
                 >
-                  Export configuration…
+                  Export settings…
                 </button>
                 <button
                   className="settings-popup-action"
@@ -289,7 +289,7 @@ export function TabBar({
                     if (!result.ok && result.error) window.alert(result.error);
                   }}
                 >
-                  Import configuration…
+                  Import settings…
                 </button>
               </div>
             </>
