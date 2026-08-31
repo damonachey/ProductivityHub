@@ -21,6 +21,7 @@ export function GithubIssuesModule({
   lockLayout,
   refreshIntervalsMinutes,
   onTitleUrlChange,
+  onTitleTextChange,
 }: ModuleProps) {
   const refreshIntervalMs = refreshIntervalsMinutes.githubIssues * 60_000;
   const [repoPath, setRepoPath] = useState("");
@@ -79,6 +80,12 @@ export function GithubIssuesModule({
     // actual link target changes avoids feedback-looping into re-renders.
     onTitleUrlChange?.(repoPath ? `https://github.com/${repoPath}/issues` : null);
     return () => onTitleUrlChange?.(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [repoPath]);
+
+  useEffect(() => {
+    onTitleTextChange?.(repoPath ? `GitHub Issues - ${repoPath}` : null);
+    return () => onTitleTextChange?.(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [repoPath]);
 

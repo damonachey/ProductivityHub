@@ -74,6 +74,14 @@ export function WorkspaceView({
   const handleTitleUrlChange = useCallback((moduleId: string, url: string | null) => {
     setTitleUrlOverrides((prev) => (prev[moduleId] === url ? prev : { ...prev, [moduleId]: url }));
   }, []);
+  // Per-instance override for the card header title text, set by modules
+  // whose display name depends on their own configured state (e.g. GitHub
+  // Issues appending its configured repo). A user's manual rename (stored
+  // on the module instance itself) always wins over this.
+  const [titleTextOverrides, setTitleTextOverrides] = useState<Record<string, string | null>>({});
+  const handleTitleTextChange = useCallback((moduleId: string, title: string | null) => {
+    setTitleTextOverrides((prev) => (prev[moduleId] === title ? prev : { ...prev, [moduleId]: title }));
+  }, []);
   const moduleCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // Flashes the specific row a search result points at (tagged with
@@ -154,7 +162,8 @@ export function WorkspaceView({
           const definition = getModuleDefinition(moduleInstance.type);
           if (!definition) return null;
           const { Component } = definition;
-          const displayTitle = moduleInstance.title || definition.title;
+          const displayTitle =
+            moduleInstance.title || titleTextOverrides[moduleInstance.id] || definition.title;
           const titleUrl =
             titleUrlOverrides[moduleInstance.id] ?? getTitleUrl(moduleInstance.type, githubProfileUrl);
           const isEditingTitle = editingModuleId === moduleInstance.id;
@@ -243,6 +252,7 @@ export function WorkspaceView({
                   lockLayout={lockLayout}
                   refreshIntervalsMinutes={refreshIntervalsMinutes}
                   onTitleUrlChange={(url) => handleTitleUrlChange(moduleInstance.id, url)}
+                  onTitleTextChange={(title) => handleTitleTextChange(moduleInstance.id, title)}
                 />
               </div>
             </div>
