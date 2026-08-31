@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import { GithubReposModule } from "./GithubReposModule";
 import { GithubNotificationsModule } from "./GithubNotificationsModule";
+import { GithubIssuesModule } from "./GithubIssuesModule";
 import { NotesModule } from "./NotesModule";
 import { BookmarksModule } from "./BookmarksModule";
 import { WebPageModule } from "./WebPageModule";
@@ -30,6 +31,7 @@ const MODULE_DEFINITIONS: ModuleDefinition[] = [
     title: "GitHub Notifications",
     Component: GithubNotificationsModule,
   },
+  { type: "github-issues", title: "GitHub Issues", Component: GithubIssuesModule },
   { type: "notes", title: "Notes", Component: NotesModule },
   { type: "bookmarks", title: "Bookmarks", Component: BookmarksModule },
   { type: "webpage", title: "Web Page", Component: WebPageModule },

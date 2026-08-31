@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
+import type { IssueSummary, NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
@@ -13,6 +13,7 @@ import type {
   AppSettings,
   BookmarkItem,
   BookmarksState,
+  GithubIssuesState,
   NotesState,
   Rect,
   RssModuleSettings,
@@ -28,6 +29,14 @@ contextBridge.exposeInMainWorld("api", {
   listNotifications: (): Promise<NotificationSummary[]> =>
     ipcRenderer.invoke("github:list-notifications"),
   getGithubProfileUrl: (): Promise<string> => ipcRenderer.invoke("github:get-profile-url"),
+  listGithubIssues: (repoPath: string): Promise<IssueSummary[]> =>
+    ipcRenderer.invoke("github:list-issues", repoPath),
+  getGithubIssuesRepo: (moduleId: string): Promise<string> =>
+    ipcRenderer.invoke("github-issues:get-repo", moduleId),
+  getAllGithubIssuesRepos: (): Promise<GithubIssuesState> =>
+    ipcRenderer.invoke("github-issues:get-all"),
+  saveGithubIssuesRepo: (moduleId: string, repoPath: string): Promise<void> =>
+    ipcRenderer.invoke("github-issues:save-repo", moduleId, repoPath),
   getSlashdotHeadlines: (): Promise<SlashdotHeadline[]> =>
     ipcRenderer.invoke("slashdot:get-headlines"),
   getHackerNewsStories: (): Promise<HackerNewsStory[]> =>

@@ -1,4 +1,4 @@
-import type { NotificationSummary, RepoSummary } from "@productivityhub/github";
+import type { IssueSummary, NotificationSummary, RepoSummary } from "@productivityhub/github";
 import type { SlashdotHeadline } from "@productivityhub/slashdot";
 import type { HackerNewsStory } from "@productivityhub/hackernews";
 import type { FreshRssItem } from "@productivityhub/freshrss";
@@ -12,6 +12,7 @@ import type {
   AppSettings,
   BookmarkItem,
   BookmarksState,
+  GithubIssuesState,
   NotesState,
   Rect,
   RssModuleSettings,
@@ -28,6 +29,10 @@ declare global {
       listRepos: () => Promise<RepoSummary[]>;
       listNotifications: () => Promise<NotificationSummary[]>;
       getGithubProfileUrl: () => Promise<string>;
+      listGithubIssues: (repoPath: string) => Promise<IssueSummary[]>;
+      getGithubIssuesRepo: (moduleId: string) => Promise<string>;
+      getAllGithubIssuesRepos: () => Promise<GithubIssuesState>;
+      saveGithubIssuesRepo: (moduleId: string, repoPath: string) => Promise<void>;
       getSlashdotHeadlines: () => Promise<SlashdotHeadline[]>;
       getHackerNewsStories: () => Promise<HackerNewsStory[]>;
       getFreshRssUnread: () => Promise<FreshRssItem[]>;

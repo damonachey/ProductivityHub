@@ -22,6 +22,7 @@ export interface RefreshIntervalsMinutes {
   githubRepos: number;
   githubNotifications: number;
   githubProfileUrl: number;
+  githubIssues: number;
   slashdot: number;
   hackernews: number;
   freshrss: number;
@@ -42,6 +43,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
   githubRepos: 5,
   githubNotifications: 1,
   githubProfileUrl: 60,
+  githubIssues: 5,
   slashdot: 15,
   hackernews: 15,
   freshrss: 5,
@@ -123,3 +125,7 @@ export interface RssModuleSettings {
 // Keyed by module instance id, so each RSS module instance keeps its own
 // independent feed list and item limits.
 export type RssState = Record<string, RssModuleSettings>;
+
+// Keyed by module instance id: the configured repo ("owner/repo") for a
+// GitHub Issues module instance.
+export type GithubIssuesState = Record<string, string>;

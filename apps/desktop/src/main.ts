@@ -2,7 +2,12 @@ import { app, BrowserWindow, dialog, ipcMain, shell, WebContentsView } from "ele
 import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
-import { listMyRepos, listMyNotifications, getMyGithubUrl } from "@productivityhub/github";
+import {
+  listMyRepos,
+  listMyNotifications,
+  getMyGithubUrl,
+  listIssuesForRepo,
+} from "@productivityhub/github";
 import { getHeadlines } from "@productivityhub/slashdot";
 import { getTopStories } from "@productivityhub/hackernews";
 import { getUnreadItems } from "@productivityhub/freshrss";
@@ -50,6 +55,8 @@ import {
   saveStocks,
   getStockCharts,
   saveStockChartSymbol,
+  getGithubIssuesRepos,
+  saveGithubIssuesRepo,
   getGoogleTasksFilters,
   saveGoogleTasksFilters,
   getWeatherLocations,
@@ -214,6 +221,12 @@ function createWindow(): void {
 ipcMain.handle("github:list-repos", () => listMyRepos());
 ipcMain.handle("github:list-notifications", () => listMyNotifications());
 ipcMain.handle("github:get-profile-url", () => getMyGithubUrl());
+ipcMain.handle("github:list-issues", (_event, repoPath: string) => listIssuesForRepo(repoPath));
+ipcMain.handle("github-issues:get-repo", (_event, moduleId: string) => getGithubIssuesRepos()[moduleId] ?? "");
+ipcMain.handle("github-issues:get-all", () => getGithubIssuesRepos());
+ipcMain.handle("github-issues:save-repo", (_event, moduleId: string, repoPath: string) =>
+  saveGithubIssuesRepo(moduleId, repoPath),
+);
 ipcMain.handle("slashdot:get-headlines", () => getHeadlines());
 ipcMain.handle("hackernews:get-stories", () => getTopStories());
 ipcMain.handle("freshrss:get-unread", () => getUnreadItems());

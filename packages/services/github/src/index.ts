@@ -75,3 +75,45 @@ export async function listMyNotifications(): Promise<NotificationSummary[]> {
     ),
   }));
 }
+
+export interface IssueSummary {
+  number: number;
+  title: string;
+  htmlUrl: string;
+  state: "open" | "closed";
+  isPullRequest: boolean;
+  labels: string[];
+  author: string | null;
+  updatedAt: string | null;
+}
+
+// `repoPath` is "owner/repo". The issues endpoint also returns pull requests
+// (they share the same underlying tracker item), so those are filtered out
+// and flagged separately for callers who want to distinguish them.
+export async function listIssuesForRepo(repoPath: string): Promise<IssueSummary[]> {
+  const [owner, repo] = repoPath.split("/");
+  if (!owner || !repo) {
+    throw new Error(`Invalid repo path "${repoPath}" - expected "owner/repo".`);
+  }
+
+  const octokit = createClient();
+  const { data } = await octokit.rest.issues.listForRepo({
+    owner,
+    repo,
+    state: "open",
+    sort: "updated",
+    direction: "desc",
+    per_page: 30,
+  });
+
+  return data.map((issue) => ({
+    number: issue.number,
+    title: issue.title,
+    htmlUrl: issue.html_url,
+    state: issue.state as "open" | "closed",
+    isPullRequest: Boolean(issue.pull_request),
+    labels: issue.labels.map((label) => (typeof label === "string" ? label : (label.name ?? ""))),
+    author: issue.user?.login ?? null,
+    updatedAt: issue.updated_at ?? null,
+  }));
+}

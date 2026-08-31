@@ -1,10 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import { CONFIG_DIR, readJson, writeJson, updateJson } from "@productivityhub/core";
+import { CONFIG_DIR, readJson, writeJson } from "@productivityhub/core";
 import type {
   AppSettings,
   BookmarksState,
+  GithubIssuesState,
   GoogleTasksFiltersState,
   NotesState,
   RssModuleSettings,
@@ -32,6 +33,7 @@ export interface StateFile {
   googleTasksFilters: GoogleTasksFiltersState;
   weatherLocations: WeatherLocationsState;
   rss: RssState;
+  githubIssues: GithubIssuesState;
 }
 
 const DEFAULT_RSS_SETTINGS: RssModuleSettings = { feeds: [], maxItems: 30, maxAgeDays: 14 };
@@ -55,11 +57,15 @@ function emptyStateFile(): StateFile {
     googleTasksFilters: {},
     weatherLocations: {},
     rss: {},
+    githubIssues: {},
   };
 }
 
+// Shallow-merged over defaults so a settings.json written before a new
+// top-level section existed (e.g. an older install missing `githubIssues`)
+// still gets a valid empty section instead of `undefined`.
 export function readState(): StateFile {
-  return readJson<StateFile>(STATE_FILE, emptyStateFile());
+  return { ...emptyStateFile(), ...readJson<Partial<StateFile>>(STATE_FILE, {}) };
 }
 
 export function writeState(state: StateFile): void {
@@ -67,7 +73,9 @@ export function writeState(state: StateFile): void {
 }
 
 function updateState(mutate: (state: StateFile) => void): void {
-  updateJson<StateFile>(STATE_FILE, emptyStateFile(), mutate);
+  const current = readState();
+  mutate(current);
+  writeState(current);
 }
 
 // First run only (settings.json genuinely doesn't exist yet - not just
@@ -238,6 +246,16 @@ export function saveWeatherLocation(moduleId: string, location: string): void {
   });
 }
 
+export function getGithubIssuesRepos(): GithubIssuesState {
+  return readState().githubIssues;
+}
+
+export function saveGithubIssuesRepo(moduleId: string, repoPath: string): void {
+  updateState((s) => {
+    s.githubIssues[moduleId] = repoPath;
+  });
+}
+
 export function getRssState(): RssState {
   return readState().rss;
 }
@@ -306,6 +324,7 @@ export function validateAndNormalizeImportedState(
       googleTasksFilters: candidate.googleTasksFilters ?? defaults.googleTasksFilters,
       weatherLocations: candidate.weatherLocations ?? defaults.weatherLocations,
       rss: candidate.rss ?? defaults.rss,
+      githubIssues: candidate.githubIssues ?? defaults.githubIssues,
     },
   };
 }
