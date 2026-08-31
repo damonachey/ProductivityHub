@@ -102,6 +102,14 @@ export type StocksState = Record<string, StockItem[]>;
 // module instance.
 export type StockChartsState = Record<string, string>;
 
+// Shared by Stock Quotes and Stock Chart: which site a symbol's link
+// points to.
+export type StockLinkTarget = "yahoo" | "finviz" | "tradingview";
+
+// Keyed by module instance id (shared between Stock Quotes and Stock
+// Chart instances, since module instance ids are globally unique).
+export type StockLinkTargetsState = Record<string, StockLinkTarget>;
+
 // Keyed by module instance id, so each Google Tasks module instance keeps
 // its own independent set of selected due-date filters (e.g.
 // ["pastDue", "today", "tomorrow"]).

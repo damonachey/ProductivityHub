@@ -18,6 +18,8 @@ import type {
   RssModuleSettings,
   StockChartsState,
   StockItem,
+  StockLinkTarget,
+  StockLinkTargetsState,
   StocksState,
   WeatherLocationsState,
   WorkspaceState,
@@ -53,6 +55,9 @@ declare global {
       getAllStockChartSymbols: () => Promise<StockChartsState>;
       saveStockChartSymbol: (moduleId: string, symbol: string) => Promise<void>;
       getStockCandles: (symbol: string) => Promise<Candle[]>;
+      getStockLinkTarget: (moduleId: string) => Promise<StockLinkTarget>;
+      getAllStockLinkTargets: () => Promise<StockLinkTargetsState>;
+      saveStockLinkTarget: (moduleId: string, target: StockLinkTarget) => Promise<void>;
       isGmailAuthenticated: () => Promise<boolean>;
       authenticateGmail: () => Promise<void>;
       disconnectGmail: () => Promise<void>;

@@ -55,6 +55,8 @@ import {
   saveStocks,
   getStockCharts,
   saveStockChartSymbol,
+  getStockLinkTargets,
+  saveStockLinkTarget,
   getGithubIssuesRepos,
   saveGithubIssuesRepo,
   getGoogleTasksFilters,
@@ -76,6 +78,7 @@ import type {
   Rect,
   RssModuleSettings,
   StockItem,
+  StockLinkTarget,
   WorkspaceState,
 } from "./types.js";
 
@@ -289,6 +292,14 @@ ipcMain.handle("stock-chart:save-symbol", (_event, moduleId: string, symbol: str
   saveStockChartSymbol(moduleId, symbol),
 );
 ipcMain.handle("stock-chart:get-candles", (_event, symbol: string) => getDailyCandles(symbol));
+ipcMain.handle(
+  "stock-link-targets:get",
+  (_event, moduleId: string) => getStockLinkTargets()[moduleId] ?? "yahoo",
+);
+ipcMain.handle("stock-link-targets:get-all", () => getStockLinkTargets());
+ipcMain.handle("stock-link-targets:save", (_event, moduleId: string, target: StockLinkTarget) =>
+  saveStockLinkTarget(moduleId, target),
+);
 ipcMain.handle("gmail:is-authenticated", () => isGmailAuthenticated());
 ipcMain.handle("gmail:authenticate", () => authenticateGmail((authUrl) => shell.openExternal(authUrl)));
 ipcMain.handle("gmail:disconnect", () => disconnectGmail());

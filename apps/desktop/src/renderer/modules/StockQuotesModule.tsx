@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { StockQuote } from "@productivityhub/yahoo-finance";
-import type { StockItem } from "../../types";
+import type { StockItem, StockLinkTarget } from "../../types";
 import { getCached, setCached } from "../cache";
+import { buildStockLinkUrl, STOCK_LINK_TARGETS } from "./stockLinks";
 import type { ModuleProps } from "./types";
 
 function quoteCacheKey(moduleId: string): string {
@@ -32,12 +33,22 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
   const [newSymbol, setNewSymbol] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [linkTarget, setLinkTarget] = useState<StockLinkTarget>("yahoo");
 
   useEffect(() => {
     window.api.getStocks().then((stocks) => {
       setItems(stocks[moduleId] ?? []);
     });
   }, [moduleId]);
+
+  useEffect(() => {
+    window.api.getStockLinkTarget(moduleId).then(setLinkTarget);
+  }, [moduleId]);
+
+  function commitLinkTarget(target: StockLinkTarget): void {
+    setLinkTarget(target);
+    window.api.saveStockLinkTarget(moduleId, target);
+  }
 
   useEffect(() => {
     if (lockLayout) setAddingOpen(false);
@@ -116,6 +127,23 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
 
   return (
     <div className="stocks">
+      {!lockLayout && (
+        <label className="stock-link-target">
+          Link to
+          <select
+            className="stock-link-select"
+            value={linkTarget}
+            onChange={(event) => commitLinkTarget(event.target.value as StockLinkTarget)}
+          >
+            {STOCK_LINK_TARGETS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       {items.length === 0 && !addingOpen && (
         <p className="module-placeholder">No stocks yet.</p>
       )}
@@ -165,7 +193,7 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
               <div className="stock-info">
                 <a
                   className="stock-symbol"
-                  href={`https://finance.yahoo.com/quote/${encodeURIComponent(item.symbol)}`}
+                  href={buildStockLinkUrl(linkTarget, item.symbol)}
                   target="_blank"
                   rel="noreferrer"
                   draggable={false}

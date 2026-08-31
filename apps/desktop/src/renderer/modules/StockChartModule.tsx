@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
+import type { StockLinkTarget } from "../../types";
 import { getCached, setCached } from "../cache";
+import { buildStockLinkUrl, STOCK_LINK_TARGETS } from "./stockLinks";
 import type { ModuleProps } from "./types";
 
 const CHART_WIDTH = 560;
@@ -78,6 +80,7 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
   const [candles, setCandles] = useState<Candle[] | null>(null);
   const [quote, setQuote] = useState<StockQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [linkTarget, setLinkTarget] = useState<StockLinkTarget>("yahoo");
 
   useEffect(() => {
     window.api.getStockChartSymbol(moduleId).then((saved) => {
@@ -88,6 +91,15 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
       setLoaded(true);
     });
   }, [moduleId]);
+
+  useEffect(() => {
+    window.api.getStockLinkTarget(moduleId).then(setLinkTarget);
+  }, [moduleId]);
+
+  function commitLinkTarget(target: StockLinkTarget): void {
+    setLinkTarget(target);
+    window.api.saveStockLinkTarget(moduleId, target);
+  }
 
   useEffect(() => {
     if (lockLayout) setDraftSymbol(symbol);
@@ -155,6 +167,20 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
             }}
           />
           <button onClick={commitSymbol}>Set</button>
+          <label className="stock-link-target">
+            Link to
+            <select
+              className="stock-link-select"
+              value={linkTarget}
+              onChange={(event) => commitLinkTarget(event.target.value as StockLinkTarget)}
+            >
+              {STOCK_LINK_TARGETS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       )}
 
@@ -166,7 +192,7 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
             <div className="stock-info">
               <a
                 className="stock-chart-symbol"
-                href={`https://finance.yahoo.com/quote/${encodeURIComponent(symbol)}`}
+                href={buildStockLinkUrl(linkTarget, symbol)}
                 target="_blank"
                 rel="noreferrer"
               >

@@ -19,6 +19,8 @@ import type {
   RssModuleSettings,
   StockChartsState,
   StockItem,
+  StockLinkTarget,
+  StockLinkTargetsState,
   StocksState,
   WeatherLocationsState,
   WorkspaceState,
@@ -69,6 +71,12 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("stock-chart:save-symbol", moduleId, symbol),
   getStockCandles: (symbol: string): Promise<Candle[]> =>
     ipcRenderer.invoke("stock-chart:get-candles", symbol),
+  getStockLinkTarget: (moduleId: string): Promise<StockLinkTarget> =>
+    ipcRenderer.invoke("stock-link-targets:get", moduleId),
+  getAllStockLinkTargets: (): Promise<StockLinkTargetsState> =>
+    ipcRenderer.invoke("stock-link-targets:get-all"),
+  saveStockLinkTarget: (moduleId: string, target: StockLinkTarget): Promise<void> =>
+    ipcRenderer.invoke("stock-link-targets:save", moduleId, target),
   isGmailAuthenticated: (): Promise<boolean> => ipcRenderer.invoke("gmail:is-authenticated"),
   authenticateGmail: (): Promise<void> => ipcRenderer.invoke("gmail:authenticate"),
   disconnectGmail: (): Promise<void> => ipcRenderer.invoke("gmail:disconnect"),
