@@ -228,7 +228,7 @@ ipcMain.handle("config:export", async (): Promise<{ ok: boolean; filePath?: stri
   if (!mainWindow) return { ok: false, error: "No window available" };
   const result = await dialog.showSaveDialog(mainWindow, {
     title: "Export settings",
-    defaultPath: "productivityhub-config.json",
+    defaultPath: "productivityhub-settings.json",
     filters: [{ name: "JSON", extensions: ["json"] }],
   });
   if (result.canceled || !result.filePath) return { ok: false };
