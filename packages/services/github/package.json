@@ -1,6 +1,5 @@
 {
   "name": "@productivityhub/github",
-  "version": "0.2.0",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
