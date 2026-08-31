@@ -188,6 +188,7 @@ function createWindow(): void {
 
   windowState.manage(window);
   mainWindow = window;
+  window.setMenuBarVisibility(!getSettings().hideMenuBar);
 
   // Any target="_blank" link (or window.open()) opens in the OS default
   // browser instead of a new Electron window.
@@ -239,7 +240,10 @@ ipcMain.handle("config:save-workspaces", (_event, state: WorkspaceState) => {
   reconcileWebPageViews(state);
 });
 ipcMain.handle("config:get-settings", () => getSettings());
-ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => saveSettings(settings));
+ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => {
+  saveSettings(settings);
+  mainWindow?.setMenuBarVisibility(!settings.hideMenuBar);
+});
 ipcMain.handle("config:export", async (): Promise<{ ok: boolean; filePath?: string; error?: string }> => {
   if (!mainWindow) return { ok: false, error: "No window available" };
   const result = await dialog.showSaveDialog(mainWindow, {
@@ -272,6 +276,7 @@ ipcMain.handle("config:import", async (): Promise<{ ok: boolean; error?: string 
 
   writeState(validated.state);
   reconcileWebPageViews(validated.state.workspaces);
+  mainWindow.setMenuBarVisibility(!validated.state.settings.hideMenuBar);
   mainWindow.webContents.reload();
   return { ok: true };
 });

@@ -18,6 +18,7 @@ export function useWorkspaces() {
   const [rememberActiveTab, setRememberActiveTabState] = useState(true);
   const [lockLayout, setLockLayoutState] = useState(false);
   const [showLinkUrl, setShowLinkUrlState] = useState(false);
+  const [hideMenuBar, setHideMenuBarState] = useState(false);
   const [refreshIntervalsMinutes, setRefreshIntervalsMinutes] = useState<RefreshIntervalsMinutes>(
     DEFAULT_REFRESH_INTERVALS_MINUTES,
   );
@@ -30,6 +31,7 @@ export function useWorkspaces() {
         setRememberActiveTabState(settings.rememberActiveTab);
         setLockLayoutState(settings.lockLayout);
         setShowLinkUrlState(settings.showLinkUrl);
+        setHideMenuBarState(settings.hideMenuBar);
         setRefreshIntervalsMinutes(settings.refreshIntervalsMinutes);
 
         if (settings.rememberActiveTab) {
@@ -55,10 +57,11 @@ export function useWorkspaces() {
         rememberActiveTab: value,
         lockLayout,
         showLinkUrl,
+        hideMenuBar,
         refreshIntervalsMinutes,
       });
     },
-    [lockLayout, showLinkUrl, refreshIntervalsMinutes],
+    [lockLayout, showLinkUrl, hideMenuBar, refreshIntervalsMinutes],
   );
 
   const setLockLayout = useCallback(
@@ -68,10 +71,11 @@ export function useWorkspaces() {
         rememberActiveTab,
         lockLayout: value,
         showLinkUrl,
+        hideMenuBar,
         refreshIntervalsMinutes,
       });
     },
-    [rememberActiveTab, showLinkUrl, refreshIntervalsMinutes],
+    [rememberActiveTab, showLinkUrl, hideMenuBar, refreshIntervalsMinutes],
   );
 
   const setShowLinkUrl = useCallback(
@@ -81,10 +85,25 @@ export function useWorkspaces() {
         rememberActiveTab,
         lockLayout,
         showLinkUrl: value,
+        hideMenuBar,
         refreshIntervalsMinutes,
       });
     },
-    [rememberActiveTab, lockLayout, refreshIntervalsMinutes],
+    [rememberActiveTab, lockLayout, hideMenuBar, refreshIntervalsMinutes],
+  );
+
+  const setHideMenuBar = useCallback(
+    (value: boolean) => {
+      setHideMenuBarState(value);
+      window.api.saveSettings({
+        rememberActiveTab,
+        lockLayout,
+        showLinkUrl,
+        hideMenuBar: value,
+        refreshIntervalsMinutes,
+      });
+    },
+    [rememberActiveTab, lockLayout, showLinkUrl, refreshIntervalsMinutes],
   );
 
   useEffect(() => {
@@ -205,6 +224,8 @@ export function useWorkspaces() {
     setLockLayout,
     showLinkUrl,
     setShowLinkUrl,
+    hideMenuBar,
+    setHideMenuBar,
     refreshIntervalsMinutes,
   };
 }

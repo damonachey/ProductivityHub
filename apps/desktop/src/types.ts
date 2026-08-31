@@ -61,6 +61,7 @@ export interface AppSettings {
   rememberActiveTab: boolean;
   lockLayout: boolean;
   showLinkUrl: boolean;
+  hideMenuBar: boolean;
   refreshIntervalsMinutes: RefreshIntervalsMinutes;
 }
 

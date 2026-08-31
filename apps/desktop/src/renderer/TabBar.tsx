@@ -17,6 +17,8 @@ interface Props {
   onSetLockLayout: (value: boolean) => void;
   showLinkUrl: boolean;
   onSetShowLinkUrl: (value: boolean) => void;
+  hideMenuBar: boolean;
+  onSetHideMenuBar: (value: boolean) => void;
   onHighlightModule: (moduleId: string, itemId: string | null) => void;
 }
 
@@ -34,6 +36,8 @@ export function TabBar({
   onSetLockLayout,
   showLinkUrl,
   onSetShowLinkUrl,
+  hideMenuBar,
+  onSetHideMenuBar,
   onHighlightModule,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -322,6 +326,14 @@ export function TabBar({
                     onChange={(event) => onSetShowLinkUrl(event.target.checked)}
                   />
                   Show link URL
+                </label>
+                <label className="settings-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={hideMenuBar}
+                    onChange={(event) => onSetHideMenuBar(event.target.checked)}
+                  />
+                  Hide menu bar
                 </label>
                 <p className="settings-popup-hint">
                   Ctrl+1-9 jumps to a tab, Ctrl+Tab / Ctrl+Shift+Tab cycles tabs, Ctrl+L toggles the

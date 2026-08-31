@@ -44,6 +44,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   rememberActiveTab: true,
   lockLayout: false,
   showLinkUrl: false,
+  hideMenuBar: false,
   refreshIntervalsMinutes: DEFAULT_REFRESH_INTERVALS_MINUTES,
 };
 

@@ -24,6 +24,8 @@ export function App() {
     setLockLayout,
     showLinkUrl,
     setShowLinkUrl,
+    hideMenuBar,
+    setHideMenuBar,
     refreshIntervalsMinutes,
   } = useWorkspaces();
   // `token` increments on every highlight request so re-selecting the same
@@ -94,6 +96,8 @@ export function App() {
         onSetLockLayout={setLockLayout}
         showLinkUrl={showLinkUrl}
         onSetShowLinkUrl={setShowLinkUrl}
+        hideMenuBar={hideMenuBar}
+        onSetHideMenuBar={setHideMenuBar}
         onHighlightModule={highlightModule}
       />
       <WorkspaceView
