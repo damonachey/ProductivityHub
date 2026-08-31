@@ -111,6 +111,20 @@ export type StockLinkTarget = "yahoo" | "finviz" | "tradingview";
 // Chart instances, since module instance ids are globally unique).
 export type StockLinkTargetsState = Record<string, StockLinkTarget>;
 
+// Per-symbol override of the Finviz/TradingView symbol to link to, when it
+// differs from the canonical (Yahoo) symbol. Missing/empty means "use the
+// symbol as-is". Shared globally across all Stock Quotes and Stock Chart
+// instances (keyed by uppercased symbol, not by module instance id).
+export interface SymbolLinkOverrides {
+  finviz?: string;
+  // When true, link to Finviz's futures page (finviz.com/futures) instead
+  // of its regular quote page for this symbol.
+  finvizFutures?: boolean;
+  tradingview?: string;
+}
+
+export type SymbolLinkMappingsState = Record<string, SymbolLinkOverrides>;
+
 // Keyed by module instance id, so each Google Tasks module instance keeps
 // its own independent set of selected due-date filters (e.g.
 // ["pastDue", "today", "tomorrow"]).

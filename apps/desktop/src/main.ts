@@ -59,6 +59,8 @@ import {
   saveStockChartSymbol,
   getStockLinkTargets,
   saveStockLinkTarget,
+  getSymbolLinkMappings,
+  saveSymbolLinkMappings,
   getGithubIssuesRepos,
   saveGithubIssuesRepo,
   getGoogleTasksFilters,
@@ -81,6 +83,7 @@ import type {
   RssModuleSettings,
   StockItem,
   StockLinkTarget,
+  SymbolLinkMappingsState,
   WorkspaceState,
 } from "./types.js";
 
@@ -424,6 +427,10 @@ ipcMain.handle(
 ipcMain.handle("stock-link-targets:get-all", () => getStockLinkTargets());
 ipcMain.handle("stock-link-targets:save", (_event, moduleId: string, target: StockLinkTarget) =>
   saveStockLinkTarget(moduleId, target),
+);
+ipcMain.handle("symbol-link-mappings:get", () => getSymbolLinkMappings());
+ipcMain.handle("symbol-link-mappings:save", (_event, mappings: SymbolLinkMappingsState) =>
+  saveSymbolLinkMappings(mappings),
 );
 ipcMain.handle("gmail:is-authenticated", () => isGmailAuthenticated());
 ipcMain.handle("gmail:authenticate", () => authenticateGmail((authUrl) => shell.openExternal(authUrl)));

@@ -1076,12 +1076,34 @@ body {
   color: #fff;
 }
 
+.stock-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .stock-link-target {
   display: flex;
   align-items: center;
   gap: 6px;
   font-size: 12px;
   color: #a1a1aa;
+}
+
+.stock-map-symbols-button {
+  background: #1e1f22;
+  border: 1px solid #2a2b2e;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.stock-map-symbols-button:hover {
+  background: #2a2b2e;
 }
 
 .stock-link-select {
@@ -1102,7 +1124,14 @@ body {
 
 .stock-chart-form {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
+}
+
+.stock-chart-form .stock-symbol-input {
+  flex: 1;
+  min-width: 80px;
 }
 
 .stock-chart-form button {
@@ -1590,6 +1619,76 @@ body {
 
 .confirm-delete:hover {
   background: #991b1b;
+}
+
+.symbol-mappings-dialog {
+  background: #26272b;
+  border: 1px solid #2a2b2e;
+  border-radius: 8px;
+  padding: 16px 20px;
+  max-width: 560px;
+  width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.symbol-mapping-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.symbol-mapping-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.symbol-mapping-header {
+  color: #a1a1aa;
+  font-size: 12px;
+  padding: 0 0 4px;
+}
+
+.symbol-mapping-yahoo {
+  color: #e4e4e7;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 8px;
+}
+
+.symbol-mapping-finviz-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.symbol-mapping-futures {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #a1a1aa;
+  cursor: pointer;
+}
+
+.symbol-mappings-save {
+  background: #1e1f22;
+  border: 1px solid #3f3f46;
+  color: #e4e4e7;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.symbol-mappings-save:hover {
+  background: #2a2b2e;
 }
 
 .gcal-connect {

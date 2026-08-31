@@ -13,6 +13,7 @@ import type {
   StockChartsState,
   StockLinkTargetsState,
   StocksState,
+  SymbolLinkMappingsState,
   WeatherLocationsState,
   WebPagesState,
   WorkspaceState,
@@ -32,6 +33,7 @@ export interface StateFile {
   stocks: StocksState;
   stockCharts: StockChartsState;
   stockLinkTargets: StockLinkTargetsState;
+  symbolLinkMappings: SymbolLinkMappingsState;
   googleTasksFilters: GoogleTasksFiltersState;
   weatherLocations: WeatherLocationsState;
   rss: RssState;
@@ -59,6 +61,7 @@ function emptyStateFile(): StateFile {
     stocks: {},
     stockCharts: {},
     stockLinkTargets: {},
+    symbolLinkMappings: {},
     googleTasksFilters: {},
     weatherLocations: {},
     rss: {},
@@ -241,6 +244,16 @@ export function saveStockLinkTarget(moduleId: string, target: StockLinkTargetsSt
   });
 }
 
+export function getSymbolLinkMappings(): SymbolLinkMappingsState {
+  return readState().symbolLinkMappings;
+}
+
+export function saveSymbolLinkMappings(mappings: SymbolLinkMappingsState): void {
+  updateState((s) => {
+    s.symbolLinkMappings = mappings;
+  });
+}
+
 export function getGoogleTasksFilters(): GoogleTasksFiltersState {
   return readState().googleTasksFilters;
 }
@@ -337,6 +350,7 @@ export function validateAndNormalizeImportedState(
       stocks: candidate.stocks ?? defaults.stocks,
       stockCharts: candidate.stockCharts ?? defaults.stockCharts,
       stockLinkTargets: candidate.stockLinkTargets ?? defaults.stockLinkTargets,
+      symbolLinkMappings: candidate.symbolLinkMappings ?? defaults.symbolLinkMappings,
       googleTasksFilters: candidate.googleTasksFilters ?? defaults.googleTasksFilters,
       weatherLocations: candidate.weatherLocations ?? defaults.weatherLocations,
       rss: candidate.rss ?? defaults.rss,

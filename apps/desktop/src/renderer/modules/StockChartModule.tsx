@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { Candle, StockQuote } from "@productivityhub/yahoo-finance";
-import type { StockLinkTarget } from "../../types";
+import type { StockLinkTarget, SymbolLinkMappingsState } from "../../types";
 import { getCached, setCached } from "../cache";
+import { SYMBOL_LINK_MAPPINGS_UPDATED_EVENT, SymbolMappingsDialog } from "../SymbolMappingsDialog";
 import { buildStockLinkUrl, STOCK_LINK_TARGETS } from "./stockLinks";
 import type { ModuleProps } from "./types";
 
@@ -81,6 +82,17 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
   const [quote, setQuote] = useState<StockQuote | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [linkTarget, setLinkTarget] = useState<StockLinkTarget>("yahoo");
+  const [mappings, setMappings] = useState<SymbolLinkMappingsState>({});
+  const [mapDialogOpen, setMapDialogOpen] = useState(false);
+
+  useEffect(() => {
+    window.api.getSymbolLinkMappings().then(setMappings);
+    function refreshMappings(): void {
+      window.api.getSymbolLinkMappings().then(setMappings);
+    }
+    window.addEventListener(SYMBOL_LINK_MAPPINGS_UPDATED_EVENT, refreshMappings);
+    return () => window.removeEventListener(SYMBOL_LINK_MAPPINGS_UPDATED_EVENT, refreshMappings);
+  }, []);
 
   useEffect(() => {
     window.api.getStockChartSymbol(moduleId).then((saved) => {
@@ -181,6 +193,9 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
               ))}
             </select>
           </label>
+          <button className="stock-map-symbols-button" onClick={() => setMapDialogOpen(true)}>
+            Map Symbols
+          </button>
         </div>
       )}
 
@@ -192,7 +207,7 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
             <div className="stock-info">
               <a
                 className="stock-chart-symbol"
-                href={buildStockLinkUrl(linkTarget, symbol)}
+                href={buildStockLinkUrl(linkTarget, symbol, mappings)}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -230,6 +245,8 @@ export function StockChartModule({ moduleId, lockLayout, refreshIntervalsMinutes
           )}
         </>
       )}
+
+      {mapDialogOpen && <SymbolMappingsDialog onClose={() => setMapDialogOpen(false)} />}
     </div>
   );
 }

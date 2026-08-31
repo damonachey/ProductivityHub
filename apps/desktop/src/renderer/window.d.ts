@@ -21,6 +21,7 @@ import type {
   StockLinkTarget,
   StockLinkTargetsState,
   StocksState,
+  SymbolLinkMappingsState,
   WeatherLocationsState,
   WorkspaceState,
 } from "../types";
@@ -58,6 +59,8 @@ declare global {
       getStockLinkTarget: (moduleId: string) => Promise<StockLinkTarget>;
       getAllStockLinkTargets: () => Promise<StockLinkTargetsState>;
       saveStockLinkTarget: (moduleId: string, target: StockLinkTarget) => Promise<void>;
+      getSymbolLinkMappings: () => Promise<SymbolLinkMappingsState>;
+      saveSymbolLinkMappings: (mappings: SymbolLinkMappingsState) => Promise<void>;
       isGmailAuthenticated: () => Promise<boolean>;
       authenticateGmail: () => Promise<void>;
       disconnectGmail: () => Promise<void>;

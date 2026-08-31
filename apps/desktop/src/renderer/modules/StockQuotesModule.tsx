@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { StockQuote } from "@productivityhub/yahoo-finance";
-import type { StockItem, StockLinkTarget } from "../../types";
+import type { StockItem, StockLinkTarget, SymbolLinkMappingsState } from "../../types";
 import { getCached, setCached } from "../cache";
+import { SYMBOL_LINK_MAPPINGS_UPDATED_EVENT, SymbolMappingsDialog } from "../SymbolMappingsDialog";
 import { buildStockLinkUrl, STOCK_LINK_TARGETS } from "./stockLinks";
 import type { ModuleProps } from "./types";
 
@@ -34,6 +35,8 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [linkTarget, setLinkTarget] = useState<StockLinkTarget>("yahoo");
+  const [mappings, setMappings] = useState<SymbolLinkMappingsState>({});
+  const [mapDialogOpen, setMapDialogOpen] = useState(false);
 
   useEffect(() => {
     window.api.getStocks().then((stocks) => {
@@ -44,6 +47,15 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
   useEffect(() => {
     window.api.getStockLinkTarget(moduleId).then(setLinkTarget);
   }, [moduleId]);
+
+  useEffect(() => {
+    window.api.getSymbolLinkMappings().then(setMappings);
+    function refreshMappings(): void {
+      window.api.getSymbolLinkMappings().then(setMappings);
+    }
+    window.addEventListener(SYMBOL_LINK_MAPPINGS_UPDATED_EVENT, refreshMappings);
+    return () => window.removeEventListener(SYMBOL_LINK_MAPPINGS_UPDATED_EVENT, refreshMappings);
+  }, []);
 
   function commitLinkTarget(target: StockLinkTarget): void {
     setLinkTarget(target);
@@ -128,20 +140,25 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
   return (
     <div className="stocks">
       {!lockLayout && (
-        <label className="stock-link-target">
-          Link to
-          <select
-            className="stock-link-select"
-            value={linkTarget}
-            onChange={(event) => commitLinkTarget(event.target.value as StockLinkTarget)}
-          >
-            {STOCK_LINK_TARGETS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="stock-toolbar">
+          <label className="stock-link-target">
+            Link to
+            <select
+              className="stock-link-select"
+              value={linkTarget}
+              onChange={(event) => commitLinkTarget(event.target.value as StockLinkTarget)}
+            >
+              {STOCK_LINK_TARGETS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="stock-map-symbols-button" onClick={() => setMapDialogOpen(true)}>
+            Map Symbols
+          </button>
+        </div>
       )}
 
       {items.length === 0 && !addingOpen && (
@@ -193,7 +210,7 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
               <div className="stock-info">
                 <a
                   className="stock-symbol"
-                  href={buildStockLinkUrl(linkTarget, item.symbol)}
+                  href={buildStockLinkUrl(linkTarget, item.symbol, mappings)}
                   target="_blank"
                   rel="noreferrer"
                   draggable={false}
@@ -248,6 +265,8 @@ export function StockQuotesModule({ moduleId, lockLayout, refreshIntervalsMinute
             + Add stock
           </button>
         ))}
+
+      {mapDialogOpen && <SymbolMappingsDialog onClose={() => setMapDialogOpen(false)} />}
     </div>
   );
 }

@@ -22,6 +22,7 @@ import type {
   StockLinkTarget,
   StockLinkTargetsState,
   StocksState,
+  SymbolLinkMappingsState,
   WeatherLocationsState,
   WorkspaceState,
 } from "./types.js";
@@ -77,6 +78,10 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke("stock-link-targets:get-all"),
   saveStockLinkTarget: (moduleId: string, target: StockLinkTarget): Promise<void> =>
     ipcRenderer.invoke("stock-link-targets:save", moduleId, target),
+  getSymbolLinkMappings: (): Promise<SymbolLinkMappingsState> =>
+    ipcRenderer.invoke("symbol-link-mappings:get"),
+  saveSymbolLinkMappings: (mappings: SymbolLinkMappingsState): Promise<void> =>
+    ipcRenderer.invoke("symbol-link-mappings:save", mappings),
   isGmailAuthenticated: (): Promise<boolean> => ipcRenderer.invoke("gmail:is-authenticated"),
   authenticateGmail: (): Promise<void> => ipcRenderer.invoke("gmail:authenticate"),
   disconnectGmail: (): Promise<void> => ipcRenderer.invoke("gmail:disconnect"),
