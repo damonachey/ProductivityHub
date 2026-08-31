@@ -150,4 +150,5 @@ contextBridge.exposeInMainWorld("api", {
   notifyFlushComplete: (): void => {
     ipcRenderer.send("app:flush-complete");
   },
+  showAbout: (): Promise<void> => ipcRenderer.invoke("app:show-about"),
 });

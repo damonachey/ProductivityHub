@@ -97,6 +97,7 @@ declare global {
       onWebPageNavigated: (callback: (moduleId: string, pageUrl: string) => void) => () => void;
       onFlushBeforeQuit: (callback: () => void) => () => void;
       notifyFlushComplete: () => void;
+      showAbout: () => Promise<void>;
     };
   }
 }

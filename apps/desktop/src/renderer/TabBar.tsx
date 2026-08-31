@@ -357,6 +357,13 @@ export function TabBar({
                 >
                   Import settings…
                 </button>
+                <div className="settings-popup-divider" />
+                <button
+                  className="settings-popup-action"
+                  onClick={() => window.api.showAbout()}
+                >
+                  About ProductivityHub…
+                </button>
               </div>
             </>
           )}

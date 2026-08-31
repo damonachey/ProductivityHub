@@ -1,4 +1,6 @@
-import { app, BrowserWindow, dialog, ipcMain, shell, WebContentsView } from "electron";
+import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, shell, WebContentsView } from "electron";
+import type { MenuItemConstructorOptions } from "electron";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
@@ -170,6 +172,115 @@ function reconcileWebPageViews(state: WorkspaceState): void {
   if (changed) saveWebPages(pages);
 }
 
+const REPO_ROOT = path.join(dirname, "..", "..", "..");
+const REPO_URL = "https://github.com/damonachey/ProductivityHub";
+
+// Only resolves in a dev checkout - a packaged build ships without .git
+// (see the electron-builder `files` list), so this falls back to
+// "unknown" there rather than failing the About dialog.
+function getCommitHash(): string {
+  try {
+    return execFileSync("git", ["rev-parse", "--short", "HEAD"], {
+      cwd: REPO_ROOT,
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return "unknown";
+  }
+}
+
+function buildAboutDetail(): string {
+  return [
+    `Version: ${app.getVersion()}`,
+    `Commit: ${getCommitHash()}`,
+    "",
+    `Electron: ${process.versions.electron}`,
+    `Chromium: ${process.versions.chrome}`,
+    `Node: ${process.versions.node}`,
+    "",
+    REPO_URL,
+  ].join("\n");
+}
+
+async function showAboutDialog(): Promise<void> {
+  if (!mainWindow) return;
+  const detail = buildAboutDetail();
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: "info",
+    title: "About ProductivityHub",
+    message: "ProductivityHub",
+    detail,
+    buttons: ["OK", "Copy Info", "Open on GitHub"],
+    defaultId: 0,
+    cancelId: 0,
+    noLink: true,
+  });
+  if (result.response === 1) {
+    clipboard.writeText(`ProductivityHub\n${detail}`);
+  } else if (result.response === 2) {
+    shell.openExternal(REPO_URL);
+  }
+}
+
+function installAppMenu(): void {
+  const isMac = process.platform === "darwin";
+
+  if (isMac) {
+    app.setAboutPanelOptions({
+      applicationName: "ProductivityHub",
+      applicationVersion: app.getVersion(),
+      version: getCommitHash(),
+      copyright: REPO_URL,
+    });
+  }
+
+  const template: MenuItemConstructorOptions[] = [];
+
+  if (isMac) {
+    template.push({
+      label: app.name,
+      submenu: [
+        { role: "about" },
+        { type: "separator" },
+        { role: "services" },
+        { type: "separator" },
+        { role: "hide" },
+        { role: "hideOthers" },
+        { role: "unhide" },
+        { type: "separator" },
+        { role: "quit" },
+      ],
+    });
+  }
+
+  template.push(
+    {
+      label: "Edit",
+      submenu: [
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "selectAll" },
+      ],
+    },
+    {
+      label: "View",
+      submenu: [{ role: "reload" }, { role: "forceReload" }, { role: "toggleDevTools" }],
+    },
+    {
+      label: "Help",
+      submenu: [{ label: "About ProductivityHub", click: () => showAboutDialog() }],
+    },
+  );
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+}
+
 function createWindow(): void {
   const windowState = windowStateKeeper({
     defaultWidth: 1280,
@@ -244,6 +355,7 @@ ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => {
   saveSettings(settings);
   mainWindow?.setMenuBarVisibility(!settings.hideMenuBar);
 });
+ipcMain.handle("app:show-about", () => showAboutDialog());
 ipcMain.handle("config:export", async (): Promise<{ ok: boolean; filePath?: string; error?: string }> => {
   if (!mainWindow) return { ok: false, error: "No window available" };
   const result = await dialog.showSaveDialog(mainWindow, {
@@ -391,6 +503,7 @@ ipcMain.handle("webpage:reload", (_event, moduleId: string) => {
 });
 
 app.whenReady().then(() => {
+  installAppMenu();
   createWindow();
   reconcileWebPageViews(getWorkspaceState());
 });
