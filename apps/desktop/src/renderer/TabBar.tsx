@@ -42,7 +42,33 @@ export function TabBar({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchIndex, setSearchIndex] = useState<SearchItem[] | null>(null);
   const [activeResultIndex, setActiveResultIndex] = useState(0);
+  const [ctrlHeld, setCtrlHeld] = useState(false);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Surfaces the Ctrl+1-9 tab-jump shortcut (see App.tsx) as a badge on each
+  // tab while Ctrl is held. Also clears on window blur - alt-tabbing away
+  // while holding Ctrl means the keyup never reaches this listener, which
+  // would otherwise leave the badges stuck showing.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent): void {
+      if (event.key === "Control") setCtrlHeld(true);
+    }
+    function handleKeyUp(event: KeyboardEvent): void {
+      if (event.key === "Control") setCtrlHeld(false);
+    }
+    function handleBlur(): void {
+      setCtrlHeld(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   function refreshSearchIndex(): void {
     // Rebuilt fresh on every focus - cheap (local IPC + in-memory cache
@@ -65,6 +91,12 @@ export function TabBar({
         return;
       }
 
+      if (event.ctrlKey && event.key.toLowerCase() === "l") {
+        event.preventDefault();
+        onSetLockLayout(!lockLayout);
+        return;
+      }
+
       if (event.key === "Escape") {
         setSettingsOpen(false);
         setSearchQuery("");
@@ -74,7 +106,7 @@ export function TabBar({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [lockLayout, onSetLockLayout]);
 
   const searchResults: SearchResult[] = searchIndex ? filterSearchIndex(searchIndex, searchQuery) : [];
 
@@ -104,7 +136,7 @@ export function TabBar({
 
   return (
     <div className="tab-bar">
-      {workspaces.map((workspace) => (
+      {workspaces.map((workspace, index) => (
         <div
           key={workspace.id}
           className={[
@@ -159,6 +191,11 @@ export function TabBar({
               }}
             >
               {workspace.name}
+            </span>
+          )}
+          {ctrlHeld && index < 9 && (
+            <span className="tab-shortcut-badge" title={`Ctrl+${index + 1}`}>
+              {index + 1}
             </span>
           )}
           {!lockLayout && workspaces.length > 1 && (
@@ -248,6 +285,7 @@ export function TabBar({
           <button
             className="tab-settings-button"
             aria-label="Quick Settings"
+            title="Quick Settings (Ctrl+,)"
             onClick={() => setSettingsOpen((open) => !open)}
           >
             ⚙
@@ -257,7 +295,7 @@ export function TabBar({
               <div className="popup-backdrop" onClick={() => setSettingsOpen(false)} />
               <div className="settings-popup">
                 <div className="settings-popup-title">Quick Settings</div>
-                <label className="settings-checkbox">
+                <label className="settings-checkbox" title="Ctrl+L">
                   <input
                     type="checkbox"
                     checked={lockLayout}
@@ -273,6 +311,10 @@ export function TabBar({
                   />
                   Remember active tab
                 </label>
+                <p className="settings-popup-hint">
+                  Ctrl+1-9 jumps to a tab, Ctrl+Tab / Ctrl+Shift+Tab cycles tabs, Ctrl+L toggles the
+                  layout lock.
+                </p>
                 <button
                   className="settings-popup-action"
                   onClick={async () => {
