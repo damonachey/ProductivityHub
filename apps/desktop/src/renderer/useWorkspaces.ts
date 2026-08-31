@@ -17,6 +17,7 @@ export function useWorkspaces() {
   const [activeId, setActiveId] = useState<string>("");
   const [rememberActiveTab, setRememberActiveTabState] = useState(true);
   const [lockLayout, setLockLayoutState] = useState(false);
+  const [showLinkUrl, setShowLinkUrlState] = useState(false);
   const [refreshIntervalsMinutes, setRefreshIntervalsMinutes] = useState<RefreshIntervalsMinutes>(
     DEFAULT_REFRESH_INTERVALS_MINUTES,
   );
@@ -28,6 +29,7 @@ export function useWorkspaces() {
         setWorkspaces(initial);
         setRememberActiveTabState(settings.rememberActiveTab);
         setLockLayoutState(settings.lockLayout);
+        setShowLinkUrlState(settings.showLinkUrl);
         setRefreshIntervalsMinutes(settings.refreshIntervalsMinutes);
 
         if (settings.rememberActiveTab) {
@@ -49,17 +51,40 @@ export function useWorkspaces() {
   const setRememberActiveTab = useCallback(
     (value: boolean) => {
       setRememberActiveTabState(value);
-      window.api.saveSettings({ rememberActiveTab: value, lockLayout, refreshIntervalsMinutes });
+      window.api.saveSettings({
+        rememberActiveTab: value,
+        lockLayout,
+        showLinkUrl,
+        refreshIntervalsMinutes,
+      });
     },
-    [lockLayout, refreshIntervalsMinutes],
+    [lockLayout, showLinkUrl, refreshIntervalsMinutes],
   );
 
   const setLockLayout = useCallback(
     (value: boolean) => {
       setLockLayoutState(value);
-      window.api.saveSettings({ rememberActiveTab, lockLayout: value, refreshIntervalsMinutes });
+      window.api.saveSettings({
+        rememberActiveTab,
+        lockLayout: value,
+        showLinkUrl,
+        refreshIntervalsMinutes,
+      });
     },
-    [rememberActiveTab, refreshIntervalsMinutes],
+    [rememberActiveTab, showLinkUrl, refreshIntervalsMinutes],
+  );
+
+  const setShowLinkUrl = useCallback(
+    (value: boolean) => {
+      setShowLinkUrlState(value);
+      window.api.saveSettings({
+        rememberActiveTab,
+        lockLayout,
+        showLinkUrl: value,
+        refreshIntervalsMinutes,
+      });
+    },
+    [rememberActiveTab, lockLayout, refreshIntervalsMinutes],
   );
 
   useEffect(() => {
@@ -178,6 +203,8 @@ export function useWorkspaces() {
     setRememberActiveTab,
     lockLayout,
     setLockLayout,
+    showLinkUrl,
+    setShowLinkUrl,
     refreshIntervalsMinutes,
   };
 }

@@ -15,6 +15,8 @@ interface Props {
   onSetRememberActiveTab: (value: boolean) => void;
   lockLayout: boolean;
   onSetLockLayout: (value: boolean) => void;
+  showLinkUrl: boolean;
+  onSetShowLinkUrl: (value: boolean) => void;
   onHighlightModule: (moduleId: string, itemId: string | null) => void;
 }
 
@@ -30,6 +32,8 @@ export function TabBar({
   onSetRememberActiveTab,
   lockLayout,
   onSetLockLayout,
+  showLinkUrl,
+  onSetShowLinkUrl,
   onHighlightModule,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -310,6 +314,14 @@ export function TabBar({
                     onChange={(event) => onSetRememberActiveTab(event.target.checked)}
                   />
                   Remember active tab
+                </label>
+                <label className="settings-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={showLinkUrl}
+                    onChange={(event) => onSetShowLinkUrl(event.target.checked)}
+                  />
+                  Show link URL
                 </label>
                 <p className="settings-popup-hint">
                   Ctrl+1-9 jumps to a tab, Ctrl+Tab / Ctrl+Shift+Tab cycles tabs, Ctrl+L toggles the

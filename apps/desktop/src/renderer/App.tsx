@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { TabBar } from "./TabBar";
 import { WorkspaceView } from "./WorkspaceView";
+import { LinkStatusBar } from "./LinkStatusBar";
 import { useWorkspaces } from "./useWorkspaces";
 import { flushAllPending } from "./pendingActions";
 
@@ -21,6 +22,8 @@ export function App() {
     setRememberActiveTab,
     lockLayout,
     setLockLayout,
+    showLinkUrl,
+    setShowLinkUrl,
     refreshIntervalsMinutes,
   } = useWorkspaces();
   // `token` increments on every highlight request so re-selecting the same
@@ -89,6 +92,8 @@ export function App() {
         onSetRememberActiveTab={setRememberActiveTab}
         lockLayout={lockLayout}
         onSetLockLayout={setLockLayout}
+        showLinkUrl={showLinkUrl}
+        onSetShowLinkUrl={setShowLinkUrl}
         onHighlightModule={highlightModule}
       />
       <WorkspaceView
@@ -103,6 +108,7 @@ export function App() {
         refreshIntervalsMinutes={refreshIntervalsMinutes}
         highlightedModule={highlightedModule}
       />
+      <LinkStatusBar enabled={showLinkUrl} />
     </div>
   );
 }

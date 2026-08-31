@@ -23,6 +23,26 @@ body {
   color: #71717a;
 }
 
+.link-status-bar {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 50;
+  max-width: 60vw;
+  background: #141517;
+  color: #e4e4e7;
+  border: 1px solid #2a2b2e;
+  border-bottom: none;
+  border-left: none;
+  border-top-right-radius: 4px;
+  padding: 3px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
 .tab-bar {
   display: flex;
   align-items: center;

@@ -41,6 +41,7 @@ const DEFAULT_RSS_SETTINGS: RssModuleSettings = { feeds: [], maxItems: 30, maxAg
 const DEFAULT_SETTINGS: AppSettings = {
   rememberActiveTab: true,
   lockLayout: false,
+  showLinkUrl: false,
   refreshIntervalsMinutes: DEFAULT_REFRESH_INTERVALS_MINUTES,
 };
 

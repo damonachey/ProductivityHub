@@ -60,6 +60,7 @@ export const DEFAULT_REFRESH_INTERVALS_MINUTES: RefreshIntervalsMinutes = {
 export interface AppSettings {
   rememberActiveTab: boolean;
   lockLayout: boolean;
+  showLinkUrl: boolean;
   refreshIntervalsMinutes: RefreshIntervalsMinutes;
 }
 
