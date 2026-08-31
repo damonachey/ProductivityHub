@@ -98,6 +98,7 @@ declare global {
       onFlushBeforeQuit: (callback: () => void) => () => void;
       notifyFlushComplete: () => void;
       showAbout: () => Promise<void>;
+      sendFeedback: () => Promise<void>;
     };
   }
 }

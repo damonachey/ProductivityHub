@@ -204,6 +204,13 @@ function buildAboutDetail(): string {
   ].join("\n");
 }
 
+const FEEDBACK_EMAIL = "Damon@Achey.Net";
+
+function buildFeedbackMailto(): string {
+  const subject = `ProductivityHub Feedback (v${app.getVersion()})`;
+  return `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(subject)}`;
+}
+
 async function showAboutDialog(): Promise<void> {
   if (!mainWindow) return;
   const detail = buildAboutDetail();
@@ -356,6 +363,7 @@ ipcMain.handle("config:save-settings", (_event, settings: AppSettings) => {
   mainWindow?.setMenuBarVisibility(!settings.hideMenuBar);
 });
 ipcMain.handle("app:show-about", () => showAboutDialog());
+ipcMain.handle("app:send-feedback", () => shell.openExternal(buildFeedbackMailto()));
 ipcMain.handle("config:export", async (): Promise<{ ok: boolean; filePath?: string; error?: string }> => {
   if (!mainWindow) return { ok: false, error: "No window available" };
   const result = await dialog.showSaveDialog(mainWindow, {

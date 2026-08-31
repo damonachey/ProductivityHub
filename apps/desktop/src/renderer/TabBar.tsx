@@ -360,6 +360,12 @@ export function TabBar({
                 <div className="settings-popup-divider" />
                 <button
                   className="settings-popup-action"
+                  onClick={() => window.api.sendFeedback()}
+                >
+                  Send Feedback…
+                </button>
+                <button
+                  className="settings-popup-action"
                   onClick={() => window.api.showAbout()}
                 >
                   About ProductivityHub…

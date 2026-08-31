@@ -151,4 +151,5 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.send("app:flush-complete");
   },
   showAbout: (): Promise<void> => ipcRenderer.invoke("app:show-about"),
+  sendFeedback: (): Promise<void> => ipcRenderer.invoke("app:send-feedback"),
 });
