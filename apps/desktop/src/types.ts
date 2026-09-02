@@ -5,6 +5,10 @@ export interface ModuleInstance {
   // Weather modules for different cities). Falls back to the registry's
   // per-type default title when unset.
   title?: string;
+  // User-set override for the card body height, in pixels, applied by
+  // dragging the resize handle at the bottom of the card. When unset the
+  // module uses its default (CSS-driven) height.
+  height?: number;
 }
 
 export interface Workspace {

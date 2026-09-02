@@ -171,6 +171,24 @@ export function useWorkspaces() {
     );
   }, []);
 
+  const resizeModule = useCallback(
+    (workspaceId: string, moduleId: string, height: number | undefined) => {
+      setWorkspaces((prev) =>
+        (prev ?? []).map((workspace) =>
+          workspace.id === workspaceId
+            ? {
+                ...workspace,
+                modules: workspace.modules.map((m) =>
+                  m.id === moduleId ? { ...m, height: height || undefined } : m,
+                ),
+              }
+            : workspace,
+        ),
+      );
+    },
+    [],
+  );
+
   const reorderModules = useCallback(
     (workspaceId: string, draggedId: string, targetId: string) => {
       setWorkspaces((prev) =>
@@ -216,6 +234,7 @@ export function useWorkspaces() {
     addModule,
     removeModule,
     renameModule,
+    resizeModule,
     reorderModules,
     reorderWorkspaces,
     rememberActiveTab,

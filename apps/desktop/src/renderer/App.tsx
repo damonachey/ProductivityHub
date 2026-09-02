@@ -16,6 +16,7 @@ export function App() {
     addModule,
     removeModule,
     renameModule,
+    resizeModule,
     reorderModules,
     reorderWorkspaces,
     rememberActiveTab,
@@ -105,6 +106,7 @@ export function App() {
         onAddModule={(type) => addModule(activeWorkspace.id, type)}
         onRemoveModule={(moduleId) => removeModule(activeWorkspace.id, moduleId)}
         onRenameModule={(moduleId, title) => renameModule(activeWorkspace.id, moduleId, title)}
+        onResizeModule={(moduleId, height) => resizeModule(activeWorkspace.id, moduleId, height)}
         onReorderModule={(draggedId, targetId) =>
           reorderModules(activeWorkspace.id, draggedId, targetId)
         }
