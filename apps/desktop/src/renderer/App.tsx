@@ -17,7 +17,8 @@ export function App() {
     removeModule,
     renameModule,
     resizeModule,
-    reorderModules,
+    moveModule,
+    setWorkspaceColumnCount,
     reorderWorkspaces,
     rememberActiveTab,
     setRememberActiveTab,
@@ -107,9 +108,8 @@ export function App() {
         onRemoveModule={(moduleId) => removeModule(activeWorkspace.id, moduleId)}
         onRenameModule={(moduleId, title) => renameModule(activeWorkspace.id, moduleId, title)}
         onResizeModule={(moduleId, height) => resizeModule(activeWorkspace.id, moduleId, height)}
-        onReorderModule={(draggedId, targetId) =>
-          reorderModules(activeWorkspace.id, draggedId, targetId)
-        }
+        onMoveModule={(draggedId, target) => moveModule(activeWorkspace.id, draggedId, target)}
+        onSetColumnCount={(count) => setWorkspaceColumnCount(activeWorkspace.id, count)}
         lockLayout={lockLayout}
         refreshIntervalsMinutes={refreshIntervalsMinutes}
         highlightedModule={highlightedModule}

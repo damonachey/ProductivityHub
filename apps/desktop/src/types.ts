@@ -9,13 +9,33 @@ export interface ModuleInstance {
   // dragging the resize handle at the bottom of the card. When unset the
   // module uses its default (CSS-driven) height.
   height?: number;
+  // Which layout column (0-indexed) this module sits in. When unset the
+  // module falls back to `arrayIndex % columnCount`, which reproduces the
+  // legacy row-by-row wrap order; the first manual drag freezes every
+  // module in the workspace to an explicit column.
+  column?: number;
 }
 
 export interface Workspace {
   id: string;
   name: string;
   modules: ModuleInstance[];
+  // How many layout columns this workspace shows. Unset means the default
+  // (DEFAULT_COLUMN_COUNT). Clamped to [MIN_COLUMN_COUNT, MAX_COLUMN_COUNT]
+  // at render time.
+  columnCount?: number;
 }
+
+export const DEFAULT_COLUMN_COUNT = 3;
+export const MIN_COLUMN_COUNT = 1;
+export const MAX_COLUMN_COUNT = 6;
+
+// Where a dragged module is being dropped: either immediately before another
+// module (adopting that module's column), or at the end of a given column
+// (including an empty one).
+export type ModuleDropTarget =
+  | { kind: "before-module"; moduleId: string }
+  | { kind: "column-tail"; column: number };
 
 export interface WorkspaceState {
   activeId: string;

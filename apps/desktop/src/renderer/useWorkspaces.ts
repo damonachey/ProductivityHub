@@ -1,6 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
-import type { RefreshIntervalsMinutes, Workspace } from "../types";
-import { DEFAULT_REFRESH_INTERVALS_MINUTES } from "../types";
+import type { ModuleDropTarget, ModuleInstance, RefreshIntervalsMinutes, Workspace } from "../types";
+import {
+  DEFAULT_COLUMN_COUNT,
+  DEFAULT_REFRESH_INTERVALS_MINUTES,
+  MAX_COLUMN_COUNT,
+  MIN_COLUMN_COUNT,
+} from "../types";
+
+// Resolves the column every module sits in, filling the fallback
+// (`arrayIndex % columnCount`) for any module without an explicit `column`
+// and clamping stored values into range. Returned in the same order as
+// `modules`, which is also the top-to-bottom order within each column.
+function resolveColumns(modules: ModuleInstance[], columnCount: number): number[] {
+  return modules.map((module, index) => {
+    const raw = module.column ?? index % columnCount;
+    return Math.max(0, Math.min(columnCount - 1, raw));
+  });
+}
 
 function defaultWorkspaces(): Workspace[] {
   return [
@@ -189,20 +205,65 @@ export function useWorkspaces() {
     [],
   );
 
-  const reorderModules = useCallback(
-    (workspaceId: string, draggedId: string, targetId: string) => {
+  const setWorkspaceColumnCount = useCallback((workspaceId: string, columnCount: number) => {
+    const clamped = Math.max(MIN_COLUMN_COUNT, Math.min(MAX_COLUMN_COUNT, columnCount));
+    setWorkspaces((prev) =>
+      (prev ?? []).map((workspace) =>
+        workspace.id === workspaceId ? { ...workspace, columnCount: clamped } : workspace,
+      ),
+    );
+  }, []);
+
+  // Moves a module within or between columns. The workspace's `modules`
+  // array is both the drop order and the top-to-bottom order inside each
+  // column, so every move first freezes all modules to explicit columns
+  // (via resolveColumns), then re-inserts the dragged one relative to its
+  // drop target.
+  const moveModule = useCallback(
+    (workspaceId: string, draggedId: string, target: ModuleDropTarget) => {
       setWorkspaces((prev) =>
         (prev ?? []).map((workspace) => {
           if (workspace.id !== workspaceId) return workspace;
-          const draggedIndex = workspace.modules.findIndex((m) => m.id === draggedId);
-          const targetIndex = workspace.modules.findIndex((m) => m.id === targetId);
-          if (draggedIndex === -1 || targetIndex === -1 || draggedIndex === targetIndex) {
-            return workspace;
+
+          const columnCount = Math.max(
+            MIN_COLUMN_COUNT,
+            Math.min(MAX_COLUMN_COUNT, workspace.columnCount ?? DEFAULT_COLUMN_COUNT),
+          );
+          const columns = resolveColumns(workspace.modules, columnCount);
+          const withColumns = workspace.modules.map((module, index) => ({
+            ...module,
+            column: columns[index],
+          }));
+
+          const draggedIndex = withColumns.findIndex((m) => m.id === draggedId);
+          if (draggedIndex === -1) return workspace;
+
+          const targetColumn =
+            target.kind === "before-module"
+              ? (withColumns.find((m) => m.id === target.moduleId)?.column ?? 0)
+              : Math.max(0, Math.min(columnCount - 1, target.column));
+
+          const [dragged] = withColumns.splice(draggedIndex, 1);
+          dragged.column = targetColumn;
+
+          if (target.kind === "before-module") {
+            const targetIndex = withColumns.findIndex((m) => m.id === target.moduleId);
+            if (targetIndex === -1) return workspace;
+            withColumns.splice(targetIndex, 0, dragged);
+          } else {
+            // Append after the last module already in that column, keeping
+            // the array grouped column-by-column for readability.
+            let insertAt = withColumns.length;
+            for (let i = withColumns.length - 1; i >= 0; i--) {
+              if (withColumns[i].column === targetColumn) {
+                insertAt = i + 1;
+                break;
+              }
+            }
+            withColumns.splice(insertAt, 0, dragged);
           }
-          const modules = [...workspace.modules];
-          const [dragged] = modules.splice(draggedIndex, 1);
-          modules.splice(targetIndex, 0, dragged);
-          return { ...workspace, modules };
+
+          return { ...workspace, modules: withColumns };
         }),
       );
     },
@@ -235,7 +296,8 @@ export function useWorkspaces() {
     removeModule,
     renameModule,
     resizeModule,
-    reorderModules,
+    moveModule,
+    setWorkspaceColumnCount,
     reorderWorkspaces,
     rememberActiveTab,
     setRememberActiveTab,
