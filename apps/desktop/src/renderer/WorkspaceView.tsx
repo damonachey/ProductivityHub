@@ -1,10 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { RefreshIntervalsMinutes, Workspace } from "../types";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import type { ModuleDropTarget, RefreshIntervalsMinutes, Workspace } from "../types";
+import {
+  DEFAULT_COLUMN_COUNT,
+  MAX_COLUMN_COUNT,
+  MIN_COLUMN_COUNT,
+  MIN_COLUMN_WIDTH_PX,
+} from "../types";
 import { getCached, setCached } from "./cache";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { MODULE_REGISTRY, getModuleDefinition } from "./modules/registry";
 
 const GITHUB_PROFILE_CACHE_KEY = "github-profile-url";
+
+// Bounds for the drag-to-resize handle on each module card body.
+const MIN_MODULE_HEIGHT = 80;
+const MAX_MODULE_HEIGHT = 1600;
 
 function getTitleUrl(type: string, githubProfileUrl: string | null): string | undefined {
   if (type === "github-repos") {
@@ -42,7 +53,10 @@ interface Props {
   onAddModule: (type: string) => void;
   onRemoveModule: (moduleId: string) => void;
   onRenameModule: (moduleId: string, title: string) => void;
-  onReorderModule: (draggedId: string, targetId: string) => void;
+  onResizeModule: (moduleId: string, height: number | undefined) => void;
+  onMoveModule: (draggedId: string, target: ModuleDropTarget) => void;
+  onSetColumnCount: (count: number) => void;
+  onSetColumnWidths: (widths: number[]) => void;
   lockLayout: boolean;
   refreshIntervalsMinutes: RefreshIntervalsMinutes;
   highlightedModule: { moduleId: string; itemId: string | null; token: number } | null;
@@ -53,7 +67,10 @@ export function WorkspaceView({
   onAddModule,
   onRemoveModule,
   onRenameModule,
-  onReorderModule,
+  onResizeModule,
+  onMoveModule,
+  onSetColumnCount,
+  onSetColumnWidths,
   lockLayout,
   refreshIntervalsMinutes,
   highlightedModule,
@@ -62,6 +79,7 @@ export function WorkspaceView({
   const [searchQuery, setSearchQuery] = useState("");
   const [draggedModuleId, setDraggedModuleId] = useState<string | null>(null);
   const [dragOverModuleId, setDragOverModuleId] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<number | null>(null);
   const [removeCandidate, setRemoveCandidate] = useState<{ id: string; title: string } | null>(
     null,
   );
@@ -83,6 +101,91 @@ export function WorkspaceView({
     setTitleTextOverrides((prev) => (prev[moduleId] === title ? prev : { ...prev, [moduleId]: title }));
   }, []);
   const moduleCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const moduleBodyRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const columnRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  // Live height while a resize drag is in progress, keyed by module id. Kept
+  // in local state (not the persisted workspace) so the drag feels immediate
+  // and only the final height is written back on pointer-up.
+  const [resizingHeight, setResizingHeight] = useState<{ moduleId: string; height: number } | null>(
+    null,
+  );
+  // Live column weights while a gutter drag is in progress; committed to the
+  // workspace on pointer-up. null when not dragging a gutter.
+  const [liveColumnWeights, setLiveColumnWeights] = useState<number[] | null>(null);
+
+  // Drag a gutter between column `leftCol` and `leftCol + 1`, shifting width
+  // between just those two columns (their combined width stays fixed, so the
+  // other columns don't move).
+  function handleGutterDown(leftCol: number, weights: number[], event: ReactPointerEvent): void {
+    const leftElement = columnRefs.current.get(leftCol);
+    const rightElement = columnRefs.current.get(leftCol + 1);
+    if (!leftElement || !rightElement) return;
+    event.preventDefault();
+
+    const startX = event.clientX;
+    const leftStartPx = leftElement.getBoundingClientRect().width;
+    const rightStartPx = rightElement.getBoundingClientRect().width;
+    const pairPx = leftStartPx + rightStartPx;
+    const pairWeight = weights[leftCol] + weights[leftCol + 1];
+    let latest = weights;
+
+    function apply(clientX: number): void {
+      const minPx = Math.min(MIN_COLUMN_WIDTH_PX, pairPx / 2);
+      const leftPx = Math.max(minPx, Math.min(pairPx - minPx, leftStartPx + (clientX - startX)));
+      const leftWeight = pairWeight * (leftPx / pairPx);
+      latest = weights.map((w, i) =>
+        i === leftCol ? leftWeight : i === leftCol + 1 ? pairWeight - leftWeight : w,
+      );
+      setLiveColumnWeights(latest);
+    }
+
+    function onMove(moveEvent: PointerEvent): void {
+      apply(moveEvent.clientX);
+    }
+    function onUp(upEvent: PointerEvent): void {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      document.body.classList.remove("column-resizing");
+      apply(upEvent.clientX);
+      onSetColumnWidths(latest);
+      setLiveColumnWeights(null);
+    }
+
+    document.body.classList.add("column-resizing");
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
+  function handleResizeStart(moduleId: string, event: ReactPointerEvent): void {
+    event.preventDefault();
+    const bodyElement = moduleBodyRefs.current.get(moduleId);
+    if (!bodyElement) return;
+    const startY = event.clientY;
+    const startHeight = bodyElement.getBoundingClientRect().height;
+
+    function clamp(value: number): number {
+      return Math.max(MIN_MODULE_HEIGHT, Math.min(MAX_MODULE_HEIGHT, value));
+    }
+
+    function onMove(moveEvent: PointerEvent): void {
+      setResizingHeight({
+        moduleId,
+        height: clamp(startHeight + (moveEvent.clientY - startY)),
+      });
+    }
+
+    function onUp(upEvent: PointerEvent): void {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      document.body.classList.remove("module-resizing");
+      onResizeModule(moduleId, clamp(startHeight + (upEvent.clientY - startY)));
+      setResizingHeight(null);
+    }
+
+    document.body.classList.add("module-resizing");
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
 
   // Flashes the specific row a search result points at (tagged with
   // data-search-item-id by each module) so the highlight lands on the exact
@@ -155,153 +258,286 @@ export function WorkspaceView({
     setEditingModuleId(null);
   }
 
-  return (
-    <div className="workspace-view">
-      <div className="module-grid">
-        {workspace.modules.map((moduleInstance) => {
-          const definition = getModuleDefinition(moduleInstance.type);
-          if (!definition) return null;
-          const { Component } = definition;
-          const displayTitle =
-            moduleInstance.title || titleTextOverrides[moduleInstance.id] || definition.title;
-          const titleUrl =
-            titleUrlOverrides[moduleInstance.id] ?? getTitleUrl(moduleInstance.type, githubProfileUrl);
-          const isEditingTitle = editingModuleId === moduleInstance.id;
+  const columnCount = Math.max(
+    MIN_COLUMN_COUNT,
+    Math.min(MAX_COLUMN_COUNT, workspace.columnCount ?? DEFAULT_COLUMN_COUNT),
+  );
 
-          return (
-            <div
-              className={[
-                "module-card",
-                moduleInstance.id === draggedModuleId && "dragging",
-                moduleInstance.id === dragOverModuleId && "drag-over",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              key={moduleInstance.id}
-              ref={(element) => {
-                if (element) moduleCardRefs.current.set(moduleInstance.id, element);
-                else moduleCardRefs.current.delete(moduleInstance.id);
+  // flex-grow weight per column: the live drag value if a gutter is being
+  // dragged, else the stored widths padded/trimmed to columnCount, else an
+  // equal share.
+  const columnWeights =
+    liveColumnWeights && liveColumnWeights.length === columnCount
+      ? liveColumnWeights
+      : Array.from({ length: columnCount }, (_, i) => {
+          const stored = workspace.columnWidths?.[i];
+          return stored && stored > 0 && Number.isFinite(stored) ? stored : 1;
+        });
+
+  // Column each module renders in: its explicit `column` once the layout has
+  // been arranged by hand, otherwise the legacy `arrayIndex % columnCount`
+  // fallback. `index` is the position in `workspace.modules`, which is also
+  // the top-to-bottom order within a column.
+  function columnOf(moduleInstance: Workspace["modules"][number], index: number): number {
+    return Math.max(0, Math.min(columnCount - 1, moduleInstance.column ?? index % columnCount));
+  }
+
+  function renderModuleCard(moduleInstance: Workspace["modules"][number]) {
+    const definition = getModuleDefinition(moduleInstance.type);
+    if (!definition) return null;
+    const { Component } = definition;
+    const displayTitle =
+      moduleInstance.title || titleTextOverrides[moduleInstance.id] || definition.title;
+    const titleUrl =
+      titleUrlOverrides[moduleInstance.id] ?? getTitleUrl(moduleInstance.type, githubProfileUrl);
+    const isEditingTitle = editingModuleId === moduleInstance.id;
+    const effectiveHeight =
+      resizingHeight?.moduleId === moduleInstance.id ? resizingHeight.height : moduleInstance.height;
+
+    return (
+      <div
+        className={[
+          "module-card",
+          moduleInstance.id === draggedModuleId && "dragging",
+          moduleInstance.id === dragOverModuleId && "drag-over",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        key={moduleInstance.id}
+        ref={(element) => {
+          if (element) moduleCardRefs.current.set(moduleInstance.id, element);
+          else moduleCardRefs.current.delete(moduleInstance.id);
+        }}
+      >
+        <div
+          className="module-card-header"
+          draggable={!lockLayout}
+          onDragStart={() => setDraggedModuleId(moduleInstance.id)}
+          onDragEnd={() => {
+            setDraggedModuleId(null);
+            setDragOverModuleId(null);
+            setDragOverColumn(null);
+          }}
+          onDragOver={(event) => {
+            event.preventDefault();
+            if (draggedModuleId && draggedModuleId !== moduleInstance.id) {
+              setDragOverModuleId(moduleInstance.id);
+            }
+          }}
+          onDragLeave={() => {
+            setDragOverModuleId((current) => (current === moduleInstance.id ? null : current));
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            // Stop the enclosing column's onDrop from also firing and
+            // appending the module to the column tail.
+            event.stopPropagation();
+            if (draggedModuleId && draggedModuleId !== moduleInstance.id) {
+              onMoveModule(draggedModuleId, { kind: "before-module", moduleId: moduleInstance.id });
+            }
+            setDraggedModuleId(null);
+            setDragOverModuleId(null);
+            setDragOverColumn(null);
+          }}
+        >
+          {isEditingTitle ? (
+            <input
+              className="module-title-rename-input"
+              autoFocus
+              value={draftTitle}
+              onChange={(event) => setDraftTitle(event.target.value)}
+              onClick={(event) => event.stopPropagation()}
+              onFocus={(event) => event.target.select()}
+              onBlur={commitTitle}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") commitTitle();
+                if (event.key === "Escape") setEditingModuleId(null);
               }}
-            >
-              <div
-                className="module-card-header"
-                draggable={!lockLayout}
-                onDragStart={() => setDraggedModuleId(moduleInstance.id)}
-                onDragEnd={() => {
-                  setDraggedModuleId(null);
-                  setDragOverModuleId(null);
-                }}
-                onDragOver={(event) => {
-                  event.preventDefault();
-                  if (draggedModuleId && draggedModuleId !== moduleInstance.id) {
-                    setDragOverModuleId(moduleInstance.id);
-                  }
-                }}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  if (draggedModuleId && draggedModuleId !== moduleInstance.id) {
-                    onReorderModule(draggedModuleId, moduleInstance.id);
-                  }
-                  setDraggedModuleId(null);
-                  setDragOverModuleId(null);
-                }}
-              >
-                {isEditingTitle ? (
-                  <input
-                    className="module-title-rename-input"
-                    autoFocus
-                    value={draftTitle}
-                    onChange={(event) => setDraftTitle(event.target.value)}
-                    onClick={(event) => event.stopPropagation()}
-                    onFocus={(event) => event.target.select()}
-                    onBlur={commitTitle}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") commitTitle();
-                      if (event.key === "Escape") setEditingModuleId(null);
-                    }}
-                  />
-                ) : titleUrl ? (
-                  <a href={titleUrl} target="_blank" rel="noreferrer" draggable={false}>
-                    {displayTitle}
-                  </a>
-                ) : (
-                  <span>{displayTitle}</span>
-                )}
-                <div className="module-card-header-actions">
-                  {!lockLayout && (
-                    <button
-                      aria-label={`Rename ${displayTitle}`}
-                      onClick={() => startEditingTitle(moduleInstance.id, displayTitle)}
-                    >
-                      ✎
-                    </button>
-                  )}
-                  {!lockLayout && (
-                    <button
-                      aria-label={`Remove ${displayTitle}`}
-                      onClick={() => setRemoveCandidate({ id: moduleInstance.id, title: displayTitle })}
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              </div>
-              <div className="module-card-body">
-                <Component
-                  moduleId={moduleInstance.id}
-                  lockLayout={lockLayout}
-                  refreshIntervalsMinutes={refreshIntervalsMinutes}
-                  onTitleUrlChange={(url) => handleTitleUrlChange(moduleInstance.id, url)}
-                  onTitleTextChange={(title) => handleTitleTextChange(moduleInstance.id, title)}
-                />
-              </div>
-            </div>
-          );
-        })}
-
-        {!lockLayout && (
-          <div className="module-card module-card-add">
-            {pickerOpen ? (
-              <div className="module-picker">
-                <input
-                  className="module-picker-search"
-                  type="text"
-                  placeholder="Search modules…"
-                  autoFocus
-                  value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Escape") setPickerOpen(false);
-                  }}
-                />
-                {filteredModules.length > 0 ? (
-                  filteredModules.map((definition) => (
-                    <button
-                      key={definition.type}
-                      onClick={() => {
-                        onAddModule(definition.type);
-                        setPickerOpen(false);
-                      }}
-                    >
-                      {definition.title}
-                    </button>
-                  ))
-                ) : (
-                  <p className="module-picker-empty">No modules match "{searchQuery}".</p>
-                )}
-              </div>
-            ) : (
+            />
+          ) : titleUrl ? (
+            <a href={titleUrl} target="_blank" rel="noreferrer" draggable={false}>
+              {displayTitle}
+            </a>
+          ) : (
+            <span>{displayTitle}</span>
+          )}
+          <div className="module-card-header-actions">
+            {!lockLayout && (
               <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setPickerOpen(true);
-                }}
+                aria-label={`Rename ${displayTitle}`}
+                onClick={() => startEditingTitle(moduleInstance.id, displayTitle)}
               >
-                + Add module
+                ✎
+              </button>
+            )}
+            {!lockLayout && (
+              <button
+                aria-label={`Remove ${displayTitle}`}
+                onClick={() => setRemoveCandidate({ id: moduleInstance.id, title: displayTitle })}
+              >
+                ×
               </button>
             )}
           </div>
+        </div>
+        <div
+          className="module-card-body"
+          ref={(element) => {
+            if (element) moduleBodyRefs.current.set(moduleInstance.id, element);
+            else moduleBodyRefs.current.delete(moduleInstance.id);
+          }}
+          style={effectiveHeight ? { height: effectiveHeight, maxHeight: "none" } : undefined}
+        >
+          <Component
+            moduleId={moduleInstance.id}
+            lockLayout={lockLayout}
+            refreshIntervalsMinutes={refreshIntervalsMinutes}
+            onTitleUrlChange={(url) => handleTitleUrlChange(moduleInstance.id, url)}
+            onTitleTextChange={(title) => handleTitleTextChange(moduleInstance.id, title)}
+          />
+        </div>
+        {!lockLayout && (
+          <div
+            className="module-card-resize-handle"
+            onPointerDown={(event) => handleResizeStart(moduleInstance.id, event)}
+            onDoubleClick={() => onResizeModule(moduleInstance.id, undefined)}
+            title="Drag to resize · double-click to reset"
+          />
         )}
+      </div>
+    );
+  }
+
+  function renderAddTile() {
+    return (
+      <div className="module-card module-card-add">
+        {pickerOpen ? (
+          <div className="module-picker">
+            <input
+              className="module-picker-search"
+              type="text"
+              placeholder="Search modules…"
+              autoFocus
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") setPickerOpen(false);
+              }}
+            />
+            {filteredModules.length > 0 ? (
+              filteredModules.map((definition) => (
+                <button
+                  key={definition.type}
+                  onClick={() => {
+                    onAddModule(definition.type);
+                    setPickerOpen(false);
+                  }}
+                >
+                  {definition.title}
+                </button>
+              ))
+            ) : (
+              <p className="module-picker-empty">No modules match "{searchQuery}".</p>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              setPickerOpen(true);
+            }}
+          >
+            + Add module
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="workspace-view">
+      {!lockLayout && (
+        <div className="workspace-toolbar">
+          <div className="column-stepper" title="Number of layout columns">
+            <span className="column-stepper-label">Columns</span>
+            <button
+              aria-label="Fewer columns"
+              disabled={columnCount <= MIN_COLUMN_COUNT}
+              onClick={() => onSetColumnCount(columnCount - 1)}
+            >
+              −
+            </button>
+            <span className="column-stepper-value">{columnCount}</span>
+            <button
+              aria-label="More columns"
+              disabled={columnCount >= MAX_COLUMN_COUNT}
+              onClick={() => onSetColumnCount(columnCount + 1)}
+            >
+              +
+            </button>
+          </div>
+        </div>
+      )}
+      <div
+        className={[
+          "module-grid",
+          draggedModuleId && "drag-active",
+          !lockLayout && "columns-adjustable",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+      >
+        {Array.from({ length: columnCount }, (_, col) => (
+          <Fragment key={col}>
+            {col > 0 && (
+              <div
+                className="column-gutter"
+                title={lockLayout ? undefined : "Drag to resize columns · double-click to reset"}
+                onPointerDown={
+                  lockLayout
+                    ? undefined
+                    : (event) => handleGutterDown(col - 1, columnWeights, event)
+                }
+                onDoubleClick={lockLayout ? undefined : () => onSetColumnWidths([])}
+              />
+            )}
+            <div
+              className={["module-column", dragOverColumn === col && "drag-over"]
+                .filter(Boolean)
+                .join(" ")}
+              style={{ flexGrow: columnWeights[col] }}
+              ref={(element) => {
+                if (element) columnRefs.current.set(col, element);
+                else columnRefs.current.delete(col);
+              }}
+              onDragOver={(event) => {
+                if (!draggedModuleId) return;
+                event.preventDefault();
+                setDragOverColumn(col);
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  setDragOverColumn((current) => (current === col ? null : current));
+                }
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                if (draggedModuleId) {
+                  onMoveModule(draggedModuleId, { kind: "column-tail", column: col });
+                }
+                setDraggedModuleId(null);
+                setDragOverModuleId(null);
+                setDragOverColumn(null);
+              }}
+            >
+              {workspace.modules
+                .map((moduleInstance, index) => ({ moduleInstance, index }))
+                .filter(({ moduleInstance, index }) => columnOf(moduleInstance, index) === col)
+                .map(({ moduleInstance }) => renderModuleCard(moduleInstance))}
+              {!lockLayout && col === columnCount - 1 && renderAddTile()}
+            </div>
+          </Fragment>
+        ))}
       </div>
 
       {removeCandidate && (

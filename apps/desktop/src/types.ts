@@ -5,13 +5,44 @@ export interface ModuleInstance {
   // Weather modules for different cities). Falls back to the registry's
   // per-type default title when unset.
   title?: string;
+  // User-set override for the card body height, in pixels, applied by
+  // dragging the resize handle at the bottom of the card. When unset the
+  // module uses its default (CSS-driven) height.
+  height?: number;
+  // Which layout column (0-indexed) this module sits in. When unset the
+  // module falls back to `arrayIndex % columnCount`, which reproduces the
+  // legacy row-by-row wrap order; the first manual drag freezes every
+  // module in the workspace to an explicit column.
+  column?: number;
 }
 
 export interface Workspace {
   id: string;
   name: string;
   modules: ModuleInstance[];
+  // How many layout columns this workspace shows. Unset means the default
+  // (DEFAULT_COLUMN_COUNT). Clamped to [MIN_COLUMN_COUNT, MAX_COLUMN_COUNT]
+  // at render time.
+  columnCount?: number;
+  // Relative widths (flex-grow weights) of the layout columns, set by
+  // dragging the gutters between them. Unset (or any non-positive / missing
+  // entry) means an equal share. Length need not match columnCount - it is
+  // padded with 1s and trimmed at render time.
+  columnWidths?: number[];
 }
+
+export const DEFAULT_COLUMN_COUNT = 3;
+export const MIN_COLUMN_COUNT = 1;
+export const MAX_COLUMN_COUNT = 6;
+// Smallest a column may be squeezed to while dragging a gutter, in pixels.
+export const MIN_COLUMN_WIDTH_PX = 240;
+
+// Where a dragged module is being dropped: either immediately before another
+// module (adopting that module's column), or at the end of a given column
+// (including an empty one).
+export type ModuleDropTarget =
+  | { kind: "before-module"; moduleId: string }
+  | { kind: "column-tail"; column: number };
 
 export interface WorkspaceState {
   activeId: string;
