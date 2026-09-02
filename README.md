@@ -119,12 +119,12 @@ pnpm --filter @productivityhub/desktop package
 
 Uses `electron-builder`. Output goes to `apps/desktop/release/`, named `ProductivityHub-<version>-<os>-<arch>.<ext>`:
 
-| OS | File (for version 0.2.1) |
+| OS | File (for version 0.2.2) |
 | --- | --- |
-| Windows (x64, portable) | `apps/desktop/release/ProductivityHub-0.2.1-win-x64.exe` |
-| macOS (x64, zip) | `apps/desktop/release/ProductivityHub-0.2.1-mac-x64.zip` |
-| macOS (arm64, zip) | `apps/desktop/release/ProductivityHub-0.2.1-mac-arm64.zip` |
-| Linux (x64, AppImage) | `apps/desktop/release/ProductivityHub-0.2.1-linux-x64.AppImage` |
+| Windows (x64, portable) | `apps/desktop/release/ProductivityHub-0.2.2-win-x64.exe` |
+| macOS (x64, zip) | `apps/desktop/release/ProductivityHub-0.2.2-mac-x64.zip` |
+| macOS (arm64, zip) | `apps/desktop/release/ProductivityHub-0.2.2-mac-arm64.zip` |
+| Linux (x64, AppImage) | `apps/desktop/release/ProductivityHub-0.2.2-linux-x64.AppImage` |
 
 The Windows portable exe is built and verified to run standalone on this repo's dev machine. The mac and Linux targets are configured but must actually be built on/for those OSes (e.g. via a CI matrix build) — they can't be produced or tested from Windows.
 
