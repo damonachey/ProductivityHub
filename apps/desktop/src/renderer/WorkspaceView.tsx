@@ -1,7 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type { ModuleDropTarget, RefreshIntervalsMinutes, Workspace } from "../types";
-import { DEFAULT_COLUMN_COUNT, MAX_COLUMN_COUNT, MIN_COLUMN_COUNT } from "../types";
+import {
+  DEFAULT_COLUMN_COUNT,
+  MAX_COLUMN_COUNT,
+  MIN_COLUMN_COUNT,
+  MIN_COLUMN_WIDTH_PX,
+} from "../types";
 import { getCached, setCached } from "./cache";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { MODULE_REGISTRY, getModuleDefinition } from "./modules/registry";
@@ -51,6 +56,7 @@ interface Props {
   onResizeModule: (moduleId: string, height: number | undefined) => void;
   onMoveModule: (draggedId: string, target: ModuleDropTarget) => void;
   onSetColumnCount: (count: number) => void;
+  onSetColumnWidths: (widths: number[]) => void;
   lockLayout: boolean;
   refreshIntervalsMinutes: RefreshIntervalsMinutes;
   highlightedModule: { moduleId: string; itemId: string | null; token: number } | null;
@@ -64,6 +70,7 @@ export function WorkspaceView({
   onResizeModule,
   onMoveModule,
   onSetColumnCount,
+  onSetColumnWidths,
   lockLayout,
   refreshIntervalsMinutes,
   highlightedModule,
@@ -95,12 +102,59 @@ export function WorkspaceView({
   }, []);
   const moduleCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const moduleBodyRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const columnRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   // Live height while a resize drag is in progress, keyed by module id. Kept
   // in local state (not the persisted workspace) so the drag feels immediate
   // and only the final height is written back on pointer-up.
   const [resizingHeight, setResizingHeight] = useState<{ moduleId: string; height: number } | null>(
     null,
   );
+  // Live column weights while a gutter drag is in progress; committed to the
+  // workspace on pointer-up. null when not dragging a gutter.
+  const [liveColumnWeights, setLiveColumnWeights] = useState<number[] | null>(null);
+
+  // Drag a gutter between column `leftCol` and `leftCol + 1`, shifting width
+  // between just those two columns (their combined width stays fixed, so the
+  // other columns don't move).
+  function handleGutterDown(leftCol: number, weights: number[], event: ReactPointerEvent): void {
+    const leftElement = columnRefs.current.get(leftCol);
+    const rightElement = columnRefs.current.get(leftCol + 1);
+    if (!leftElement || !rightElement) return;
+    event.preventDefault();
+
+    const startX = event.clientX;
+    const leftStartPx = leftElement.getBoundingClientRect().width;
+    const rightStartPx = rightElement.getBoundingClientRect().width;
+    const pairPx = leftStartPx + rightStartPx;
+    const pairWeight = weights[leftCol] + weights[leftCol + 1];
+    let latest = weights;
+
+    function apply(clientX: number): void {
+      const minPx = Math.min(MIN_COLUMN_WIDTH_PX, pairPx / 2);
+      const leftPx = Math.max(minPx, Math.min(pairPx - minPx, leftStartPx + (clientX - startX)));
+      const leftWeight = pairWeight * (leftPx / pairPx);
+      latest = weights.map((w, i) =>
+        i === leftCol ? leftWeight : i === leftCol + 1 ? pairWeight - leftWeight : w,
+      );
+      setLiveColumnWeights(latest);
+    }
+
+    function onMove(moveEvent: PointerEvent): void {
+      apply(moveEvent.clientX);
+    }
+    function onUp(upEvent: PointerEvent): void {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      document.body.classList.remove("column-resizing");
+      apply(upEvent.clientX);
+      onSetColumnWidths(latest);
+      setLiveColumnWeights(null);
+    }
+
+    document.body.classList.add("column-resizing");
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
 
   function handleResizeStart(moduleId: string, event: ReactPointerEvent): void {
     event.preventDefault();
@@ -208,6 +262,17 @@ export function WorkspaceView({
     MIN_COLUMN_COUNT,
     Math.min(MAX_COLUMN_COUNT, workspace.columnCount ?? DEFAULT_COLUMN_COUNT),
   );
+
+  // flex-grow weight per column: the live drag value if a gutter is being
+  // dragged, else the stored widths padded/trimmed to columnCount, else an
+  // equal share.
+  const columnWeights =
+    liveColumnWeights && liveColumnWeights.length === columnCount
+      ? liveColumnWeights
+      : Array.from({ length: columnCount }, (_, i) => {
+          const stored = workspace.columnWidths?.[i];
+          return stored && stored > 0 && Number.isFinite(stored) ? stored : 1;
+        });
 
   // Column each module renders in: its explicit `column` once the layout has
   // been arranged by hand, otherwise the legacy `arrayIndex % columnCount`
@@ -414,40 +479,64 @@ export function WorkspaceView({
         </div>
       )}
       <div
-        className={["module-grid", draggedModuleId && "drag-active"].filter(Boolean).join(" ")}
+        className={[
+          "module-grid",
+          draggedModuleId && "drag-active",
+          !lockLayout && "columns-adjustable",
+        ]
+          .filter(Boolean)
+          .join(" ")}
       >
         {Array.from({ length: columnCount }, (_, col) => (
-          <div
-            key={col}
-            className={["module-column", dragOverColumn === col && "drag-over"]
-              .filter(Boolean)
-              .join(" ")}
-            onDragOver={(event) => {
-              if (!draggedModuleId) return;
-              event.preventDefault();
-              setDragOverColumn(col);
-            }}
-            onDragLeave={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-                setDragOverColumn((current) => (current === col ? null : current));
-              }
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              if (draggedModuleId) {
-                onMoveModule(draggedModuleId, { kind: "column-tail", column: col });
-              }
-              setDraggedModuleId(null);
-              setDragOverModuleId(null);
-              setDragOverColumn(null);
-            }}
-          >
-            {workspace.modules
-              .map((moduleInstance, index) => ({ moduleInstance, index }))
-              .filter(({ moduleInstance, index }) => columnOf(moduleInstance, index) === col)
-              .map(({ moduleInstance }) => renderModuleCard(moduleInstance))}
-            {!lockLayout && col === columnCount - 1 && renderAddTile()}
-          </div>
+          <Fragment key={col}>
+            {col > 0 && (
+              <div
+                className="column-gutter"
+                title={lockLayout ? undefined : "Drag to resize columns · double-click to reset"}
+                onPointerDown={
+                  lockLayout
+                    ? undefined
+                    : (event) => handleGutterDown(col - 1, columnWeights, event)
+                }
+                onDoubleClick={lockLayout ? undefined : () => onSetColumnWidths([])}
+              />
+            )}
+            <div
+              className={["module-column", dragOverColumn === col && "drag-over"]
+                .filter(Boolean)
+                .join(" ")}
+              style={{ flexGrow: columnWeights[col] }}
+              ref={(element) => {
+                if (element) columnRefs.current.set(col, element);
+                else columnRefs.current.delete(col);
+              }}
+              onDragOver={(event) => {
+                if (!draggedModuleId) return;
+                event.preventDefault();
+                setDragOverColumn(col);
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  setDragOverColumn((current) => (current === col ? null : current));
+                }
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                if (draggedModuleId) {
+                  onMoveModule(draggedModuleId, { kind: "column-tail", column: col });
+                }
+                setDraggedModuleId(null);
+                setDragOverModuleId(null);
+                setDragOverColumn(null);
+              }}
+            >
+              {workspace.modules
+                .map((moduleInstance, index) => ({ moduleInstance, index }))
+                .filter(({ moduleInstance, index }) => columnOf(moduleInstance, index) === col)
+                .map(({ moduleInstance }) => renderModuleCard(moduleInstance))}
+              {!lockLayout && col === columnCount - 1 && renderAddTile()}
+            </div>
+          </Fragment>
         ))}
       </div>
 

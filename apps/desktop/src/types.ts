@@ -24,11 +24,18 @@ export interface Workspace {
   // (DEFAULT_COLUMN_COUNT). Clamped to [MIN_COLUMN_COUNT, MAX_COLUMN_COUNT]
   // at render time.
   columnCount?: number;
+  // Relative widths (flex-grow weights) of the layout columns, set by
+  // dragging the gutters between them. Unset (or any non-positive / missing
+  // entry) means an equal share. Length need not match columnCount - it is
+  // padded with 1s and trimmed at render time.
+  columnWidths?: number[];
 }
 
 export const DEFAULT_COLUMN_COUNT = 3;
 export const MIN_COLUMN_COUNT = 1;
 export const MAX_COLUMN_COUNT = 6;
+// Smallest a column may be squeezed to while dragging a gutter, in pixels.
+export const MIN_COLUMN_WIDTH_PX = 240;
 
 // Where a dragged module is being dropped: either immediately before another
 // module (adopting that module's column), or at the end of a given column

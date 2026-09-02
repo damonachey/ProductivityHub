@@ -388,19 +388,43 @@ body {
   display: flex;
   /* Stretch (the default) so short or empty columns grow to the tallest
      column's height, giving every column a real drop target while
-     dragging. */
+     dragging. Column spacing comes from .column-gutter elements, not gap. */
   align-items: stretch;
-  gap: 16px;
 }
 
 .module-column {
-  flex: 1 1 0;
-  min-width: 260px;
+  /* flex-grow is set inline per column (adjustable widths); keep shrink and
+     a zero basis here so the grow weights alone decide the split. */
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0;
+  /* Keep in sync with MIN_COLUMN_WIDTH_PX in types.ts. */
+  min-width: 240px;
   /* Floor so an all-empty grid still has somewhere to drop. */
   min-height: 140px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+.column-gutter {
+  flex: 0 0 16px;
+  align-self: stretch;
+  border-radius: 4px;
+}
+
+.module-grid.columns-adjustable .column-gutter {
+  cursor: col-resize;
+}
+
+.module-grid.columns-adjustable .column-gutter:hover {
+  background: #2a2b2e;
+}
+
+body.column-resizing,
+body.column-resizing * {
+  cursor: col-resize !important;
+  user-select: none;
 }
 
 /* While a card is being dragged, outline every column so empty ones read

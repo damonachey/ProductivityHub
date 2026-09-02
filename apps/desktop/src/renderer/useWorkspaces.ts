@@ -214,6 +214,19 @@ export function useWorkspaces() {
     );
   }, []);
 
+  const setWorkspaceColumnWidths = useCallback((workspaceId: string, columnWidths: number[]) => {
+    // Normalise so the weights average 1 (keeps stored numbers readable and
+    // independent of the pixel widths they were derived from).
+    const positive = columnWidths.map((w) => (w > 0 && Number.isFinite(w) ? w : 1));
+    const mean = positive.reduce((sum, w) => sum + w, 0) / (positive.length || 1);
+    const normalised = mean > 0 ? positive.map((w) => w / mean) : positive;
+    setWorkspaces((prev) =>
+      (prev ?? []).map((workspace) =>
+        workspace.id === workspaceId ? { ...workspace, columnWidths: normalised } : workspace,
+      ),
+    );
+  }, []);
+
   // Moves a module within or between columns. The workspace's `modules`
   // array is both the drop order and the top-to-bottom order inside each
   // column, so every move first freezes all modules to explicit columns
@@ -298,6 +311,7 @@ export function useWorkspaces() {
     resizeModule,
     moveModule,
     setWorkspaceColumnCount,
+    setWorkspaceColumnWidths,
     reorderWorkspaces,
     rememberActiveTab,
     setRememberActiveTab,
