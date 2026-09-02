@@ -386,19 +386,33 @@ body {
 
 .module-grid {
   display: flex;
-  align-items: flex-start;
+  /* Stretch (the default) so short or empty columns grow to the tallest
+     column's height, giving every column a real drop target while
+     dragging. */
+  align-items: stretch;
   gap: 16px;
 }
 
 .module-column {
   flex: 1 1 0;
   min-width: 260px;
+  /* Floor so an all-empty grid still has somewhere to drop. */
+  min-height: 140px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.module-column.drag-over {
+/* While a card is being dragged, outline every column so empty ones read
+   as drop targets rather than blank space. */
+.module-grid.drag-active .module-column {
+  outline: 1px dashed #3f3f46;
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.module-column.drag-over,
+.module-grid.drag-active .module-column.drag-over {
   outline: 2px dashed #6366f1;
   outline-offset: 4px;
   border-radius: 8px;

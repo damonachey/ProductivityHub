@@ -413,7 +413,9 @@ export function WorkspaceView({
           </div>
         </div>
       )}
-      <div className="module-grid">
+      <div
+        className={["module-grid", draggedModuleId && "drag-active"].filter(Boolean).join(" ")}
+      >
         {Array.from({ length: columnCount }, (_, col) => (
           <div
             key={col}
